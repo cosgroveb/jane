@@ -1,1 +1,5 @@
 *.beam
+*.old
+bak/*
+bak
+*.dump
