@@ -3,3 +3,4 @@
 bak/*
 bak
 *.dump
+.erlang
