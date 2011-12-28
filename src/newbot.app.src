@@ -18,7 +18,9 @@
          {server_domain, "localhost"},
          {muc_room, "test@conference.localhost/jane"},
          {commands, [
-                      "date"
+                      {"date","date"},
+                      {"uptime","uptime"},
+                      {"uname", "uname -a"}
                     ]}
         ]}
  ]}.

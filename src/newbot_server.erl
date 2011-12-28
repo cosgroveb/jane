@@ -144,16 +144,22 @@ create_response(Body) when is_binary(Body) ->
       exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body),Result)
   end.
 
-has_valid_command([H|[]],Body) ->
-  case string:rstr(Body,H) > 0 of
+has_valid_command([{CmdStr,CmdFull}|[]],Body)
+    when is_list(CmdStr) andalso is_list(CmdFull) ->
+  case string:rstr(Body,CmdStr) > 0 of
     false -> false;
-    true -> H
+    true -> CmdFull
   end;
-has_valid_command([H|T],Body) ->
-  case string:rstr(Body,H) > 0 of
+has_valid_command([{CmdStr,CmdFull}|T],Body)
+    when is_list(CmdStr) andalso is_list(CmdFull) ->
+  case string:rstr(Body,CmdStr) > 0 of
     false -> has_valid_command(T,Body);
-    true  -> H
-  end.
+    true  -> CmdFull
+  end;
+has_valid_command(CommandList, Body) ->
+  throw({newbot_invalid_command_list,
+        {command_list, CommandList},
+        {message_body, Body}}).
 
 handle_presence(Session, Packet, _Presence) ->
   case exmpp_jid:make(_From = Packet#received_packet.from) of
