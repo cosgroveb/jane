@@ -1,7 +1,7 @@
 {application, newbot,
  [
   {description, "a jabber bot"},
-  {vsn, "0.1."},
+  {vsn, "0.1.0"},
   {modules, [
               newbot_app,
               newbot_sup,
