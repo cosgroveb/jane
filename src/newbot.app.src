@@ -13,11 +13,12 @@
                   stdlib
                  ]},
   {mod, { newbot_app, []}},
-  {env, [{user_name,"jane"},
-         {user_domain,"localhost"},
+  {env, [{user_login,"jane@localhost"},
          {user_password,"password"},
          {server_domain, "localhost"},
-         {server_port, 5222},
-         {muc_room, "test@conference.localhost/jane"}
+         {muc_room, "test@conference.localhost/jane"},
+         {commands, [
+                      "date"
+                    ]}
         ]}
  ]}.
