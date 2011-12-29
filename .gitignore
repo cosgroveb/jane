@@ -6,3 +6,4 @@ bak
 .erlang
 ebin/*.app
 bot-test/*
+rel
