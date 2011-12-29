@@ -163,16 +163,16 @@ has_valid_command(CommandList, Body) ->
 
 handle_presence(Session, Packet, _Presence) ->
   case exmpp_jid:make(_From = Packet#received_packet.from) of
-	JID ->
+  JID ->
     case _Type = Packet#received_packet.type_attr of
-		"available" ->
+    "available" ->
       ok;
-		"unavailable" ->
+    "unavailable" ->
       ok;
-		"subscribe" ->
+    "subscribe" ->
       presence_subscribed(Session, JID),
       presence_subscribe(Session, JID);
-		"subscribed" ->
+    "subscribed" ->
       presence_subscribed(Session, JID),
       presence_subscribe(Session, JID)
     end
