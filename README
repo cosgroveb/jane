@@ -4,8 +4,6 @@
 
 jane is an Erlang XMPP bot I'm working on to teach myself the basics of Erlang and
 OTP.
-that's ok.
-
 
 jane hangs out in Multi-User Chat and responds to pre-defined commands. Right now,
 all it does is execute shell commands and return the result in an XMPP message.
