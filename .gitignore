@@ -5,4 +5,4 @@ bak
 *.dump
 .erlang
 ebin/*.app
-
+bot-test/*

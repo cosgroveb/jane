@@ -50,7 +50,7 @@ setup_and_join() ->
   JID     = exmpp_jid:make(UserName, UserDomain, random),
   Status  = exmpp_presence:set_status(exmpp_presence:unavailable(), ""),
   exmpp_session:auth_info(Session, JID, ?USER_PASSWORD),
-  exmpp_session:connect_TCP(Session, UserDomain, 5222),
+  exmpp_session:connect_TCP(Session, ?SERVER_DOMAIN, 5222),
   exmpp_session:login(Session, "PLAIN"),
   exmpp_session:send_packet(Session, Status),
   exmpp_session:send_packet(
