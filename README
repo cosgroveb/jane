@@ -1,1 +1,72 @@
-jane: just another erlang bot
+# jane: just another erlang bot
+
+## Description
+
+jane is an Erlang XMPP bot I'm working on to teach myself the basics of Erlang and
+OTP.
+that's ok.
+
+
+jane hangs out in Multi-User Chat and responds to pre-defined commands. Right now,
+all it does is execute shell commands and return the result in an XMPP message.
+
+
+The commands it responds to are defined in jane.app.src (this needs to go into a
+separate configuration file). In the commands tuple, the format is
+{"alias","command args"} where the alias is the command you send to jane in a chat
+message like:
+
+>jane: date
+
+
+## Installation (assuming you already have Erlang, at least R12)
+
+
+First, configure jane's connection settings by editing src/jane.app.src.
+
+
+Installation and running jane is tricky so far. I haven't got rebar building
+releases (or pulling dependencies??) correctly, yet. You'll probably have to
+do something like this:
+
+
+>cd jane
+>./rebar clean compile generate
+
+
+If the previous step fails to include xmpp, get it from https://github.com/processone/exmpp,
+and install it. Next, if you had to install xmpp yourself:
+
+
+>./rebar clean compile generate
+(this will give an error, but will compile the beam files we need to run jane)
+
+
+Now, since our release wasn't fully generated, we'll start jane manually:
+
+
+>erl -pa ebin
+
+
+>1>application:start(jane).
+>ok.
+>2>jane_server:join_chat().
+>joining_chat.
+
+
+That's it. I really don't recommend doing all that until I get the rebar stuff figured out.
+
+
+Oh, and there aren't any tests yet. I'm not adding any more code until I've got some tests.
+
+
+## Todos
+
+
+* Get rebar or reltools working properly with this project
+* Tests
+* ???
+* Profit!
+* Take advantage of concurrency by moving the logic to handle commands and return XMPP
+output into workers
+
