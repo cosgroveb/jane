@@ -1,18 +1,18 @@
-{application, newbot,
+{application, jane,
  [
-  {description, "a jabber bot"},
+  {description, "jane: just another erlang bot"},
   {vsn, "0.1.0"},
   {modules, [
-              newbot_app,
-              newbot_sup,
-              newbot_server
+              jane_app,
+              jane_sup,
+              jane_server
             ]},
-  {registered, [newbot_sup]},
+  {registered, [jane_sup]},
   {applications, [
                   kernel,
                   stdlib
                  ]},
-  {mod, { newbot_app, []}},
+  {mod, { jane_app, []}},
   {env, [{user_login,"jane@localhost"},
          {user_password,"password"},
          {server_domain, "localhost"},

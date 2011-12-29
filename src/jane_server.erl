@@ -1,9 +1,9 @@
--module(newbot_server).
+-module(jane_server).
 -behavior(gen_server).
 
 -include_lib("exmpp/include/exmpp.hrl").
 -include_lib("exmpp/include/exmpp_client.hrl").
--include_lib("../include/newbot.hrl").
+-include_lib("../include/jane.hrl").
 
 -export([start_link/0, join_chat/0, setup_and_join/0]).
 
@@ -25,7 +25,7 @@ join_chat() ->
 %% api callbacks
 
 handle_call(join_chat, _From, _State) ->
-  Pid = spawn(fun newbot_server:setup_and_join/0),
+  Pid = spawn(fun jane_server:setup_and_join/0),
   {reply, joining, Pid};
 
 handle_call(_Request, _From, State) ->
@@ -157,7 +157,7 @@ has_valid_command([{CmdStr,CmdFull}|T],Body)
     true  -> CmdFull
   end;
 has_valid_command(CommandList, Body) ->
-  throw({newbot_invalid_command_list,
+  throw({jane_invalid_command_list,
         {command_list, CommandList},
         {message_body, Body}}).
 

@@ -1,4 +1,4 @@
--module(newbot_app).
+-module(jane_app).
 
 -behaviour(application).
 
@@ -10,7 +10,7 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    newbot_sup:start_link().
+    jane_sup:start_link().
 
 stop(_State) ->
     ok.

@@ -1,4 +1,4 @@
--module(newbot_sup).
+-module(jane_sup).
 
 -behaviour(supervisor).
 
@@ -26,5 +26,5 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-  NewbotServer = ?CHILD(newbot_server, worker),
-    {ok, { {one_for_one, 5, 10}, [NewbotServer]} }.
+  JaneServer = ?CHILD(jane_server, worker),
+    {ok, { {one_for_one, 5, 10}, [JaneServer]} }.
