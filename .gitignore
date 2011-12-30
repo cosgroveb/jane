@@ -7,4 +7,3 @@ bak
 ebin/*.app
 bot-test/*
 rel
-rebar
