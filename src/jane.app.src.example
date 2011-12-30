@@ -13,10 +13,10 @@
                   stdlib
                  ]},
   {mod, { jane_app, []}},
-  {env, [{user_login,"jane@braintreepayments.com"},
+  {env, [{user_login,"jane@example.com"},
          {user_password,"changeme"},
-         {server_domain, "jabber.braintreepayments.com"},
-         {muc_room, "test@conference.braintreepayments.com/jane"},
+         {server_domain, "jabber.example.com"},
+         {muc_room, "test@conference.example.com/jane"},
          {commands, [
                       {"uptime","uptime"},
                       {"hi", "echo hello $sender"},
