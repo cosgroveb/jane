@@ -139,12 +139,15 @@ create_response(Body,MetaData) when is_binary(Body) and is_list(MetaData) ->
   case has_valid_command(?COMMANDS,binary_to_list(Body)) of
     false ->
       exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body), string:concat("I don't understand ", Body));
+    {"", ReturnText} ->
+      NewReturnText = [interpolate(X, MetaData) ++ " " || X <- string:tokens(ReturnText, " ")],
+      exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body), NewReturnText);
     {Command, ReturnText} ->
-      NewCommand = [interpolate(X,MetaData) ++ " " || X <- string:tokens(Command," ")],
+      NewCommand = [interpolate(X, MetaData) ++ " " || X <- string:tokens(Command, " ")],
       os:cmd(NewCommand),
       exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body), ReturnText);
     Command ->
-      NewCommand = [interpolate(X,MetaData) ++ " " || X <- string:tokens(Command," ")],
+      NewCommand = [interpolate(X, MetaData) ++ " " || X <- string:tokens(Command, " ")],
       exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body), os:cmd(NewCommand))
   end.
 
@@ -163,8 +166,6 @@ get_metadata(_,[_|[]]) ->
 get_metadata(Key,[_|Tail]) ->
   get_metadata(Key,Tail).
 
-
-
 has_valid_command([], _) ->
   false;
 has_valid_command([Vocabulary|Tail],Body) ->
@@ -176,7 +177,6 @@ has_valid_command([Vocabulary|Tail],Body) ->
 command({_Word,Command}) ->
   Command;
 command({_Word,Command,ReturnText}) ->
-  io:format("~n{Command,ReturnText = {~p,~p}~n", [Command,ReturnText]),
   {Command,ReturnText}.
 
 handle_presence(Session, Packet, _Presence) ->
