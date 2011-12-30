@@ -1,6 +1,6 @@
-# jane: just another erlang bot
+jane: just another erlang bot
 
-## Description
+Description
 
 jane is an Erlang XMPP bot I'm working on to teach myself the basics of Erlang and
 OTP.
@@ -17,7 +17,7 @@ message like:
 >jane: date
 
 
-## Installation (assuming you already have Erlang, at least R12)
+Installation (assuming you already have Erlang, at least R12)
 
 
 First, configure jane's connection settings by editing src/jane.app.src.
@@ -58,13 +58,12 @@ That's it. I really don't recommend doing all that until I get the rebar stuff f
 Oh, and there aren't any tests yet. I'm not adding any more code until I've got some tests.
 
 
-## Todos
+Todos
 
 
 * Get rebar or reltools working properly with this project
 * Tests
 * ???
 * Profit!
-* Take advantage of concurrency by moving the logic to handle commands and return XMPP
-output into workers
+* Take advantage of concurrency by moving the logic to handle commands and return XMPP output into workers
 
