@@ -3,7 +3,7 @@
 
 -include_lib("exmpp/include/exmpp.hrl").
 -include_lib("exmpp/include/exmpp_client.hrl").
--include_lib("../include/jane.hrl").
+-include_lib("jane.hrl").
 
 -export([start_link/0, join_chat/0, setup_and_join/0]).
 

@@ -23,9 +23,7 @@ Installation (assuming you already have Erlang, at least R12)
 First, configure jane's connection settings by editing src/jane.app.src.
 
 
-Installation and running jane is tricky so far. I haven't got rebar building
-releases (or pulling dependencies??) correctly, yet. You'll probably have to
-do something like this:
+Then:
 
 
 >cd jane
@@ -37,7 +35,6 @@ and install it. Next, if you had to install xmpp yourself:
 
 
 >./rebar clean compile generate
-(this will give an error, but will compile the beam files we need to run jane)
 
 
 Now, since our release wasn't fully generated, we'll start jane manually:
@@ -52,16 +49,12 @@ Now, since our release wasn't fully generated, we'll start jane manually:
 >joining_chat.
 
 
-That's it. I really don't recommend doing all that until I get the rebar stuff figured out.
-
-
-Oh, and there aren't any tests yet. I'm not adding any more code until I've got some tests.
+There aren't any tests yet. 
 
 
 Todos
 
 
-* Get rebar or reltools working properly with this project
 * Tests
 * ???
 * Profit!
