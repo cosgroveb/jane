@@ -148,7 +148,7 @@ create_response(Body,MetaData) when is_binary(Body) and is_list(MetaData) ->
 interpolate([Sigil|Name],MetaData) when [Sigil] =:= "$" ->
   case get_metadata(list_to_atom(Name),MetaData) of
     false -> [Sigil] ++ Name;
-    Value -> Value
+    Value -> re:replace(Value,"[\\W]", "_", [global, {return, list}])
   end;
 interpolate(Term,_) ->
   Term.
