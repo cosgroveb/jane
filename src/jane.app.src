@@ -20,7 +20,9 @@
          {commands, [
                       {"date","date"},
                       {"uptime","uptime"},
-                      {"uname", "uname -a"}
+                      {"uname", "uname -a"},
+                      {"hi", "echo hello $sender"},
+                      {"where are your bins?", "echo $PATH"}
                     ]}
         ]}
  ]}.

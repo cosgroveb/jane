@@ -125,7 +125,7 @@ handle_message(Session, Packet, TypeAttr) ->
         exmpp_xml:append_child(
           exmpp_xml:element("jabber:client",
             message),
-          create_response(Body,[{name,Resource}])),
+          create_response(Body,[{sender,Resource}])),
         <<"from">>,
         From),
       <<"to">>,
@@ -136,18 +136,26 @@ handle_message(Session, Packet, TypeAttr) ->
 
 %% Handle bot commands here and return message body for XMPP reply
 create_response(Body,MetaData) when is_binary(Body) and is_list(MetaData) ->
-  io:format("~nMeta name: ~p~n",[get_metadata(name, MetaData)]),
   case has_valid_command(?COMMANDS,binary_to_list(Body)) of
     false ->
       exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body),string:concat( "I don't understand ",Body));
     Command ->
-      Result = os:cmd(Command),
+      NewCommand = [interpolate(X,MetaData) ++ " " || X <- string:tokens(Command," ")],
+      Result = os:cmd(NewCommand),
       exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body),Result)
   end.
 
+interpolate([Sigil|Name],MetaData) when [Sigil] =:= "$" ->
+  case get_metadata(list_to_atom(Name),MetaData) of
+    false -> [Sigil] ++ Name;
+    Value -> Value
+  end;
+interpolate(Term,_) ->
+  Term.
+
 get_metadata(_Key,[{_Key, Value}|_]) ->
   Value;
-get_metadata(_Key,[_|[]]) ->
+get_metadata(_,[_|[]]) ->
   false;
 get_metadata(Key,[_|Tail]) ->
   get_metadata(Key,Tail).
