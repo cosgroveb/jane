@@ -138,11 +138,14 @@ handle_message(Session, Packet, TypeAttr) ->
 create_response(Body,MetaData) when is_binary(Body) and is_list(MetaData) ->
   case has_valid_command(?COMMANDS,binary_to_list(Body)) of
     false ->
-      exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body),string:concat( "I don't understand ",Body));
+      exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body), string:concat("I don't understand ", Body));
+    {Command, ReturnText} ->
+      NewCommand = [interpolate(X,MetaData) ++ " " || X <- string:tokens(Command," ")],
+      os:cmd(NewCommand),
+      exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body), ReturnText);
     Command ->
       NewCommand = [interpolate(X,MetaData) ++ " " || X <- string:tokens(Command," ")],
-      Result = os:cmd(NewCommand),
-      exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body),Result)
+      exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body), os:cmd(NewCommand))
   end.
 
 interpolate([Sigil|Name],MetaData) when [Sigil] =:= "$" ->
@@ -160,22 +163,21 @@ get_metadata(_,[_|[]]) ->
 get_metadata(Key,[_|Tail]) ->
   get_metadata(Key,Tail).
 
-has_valid_command([{CmdStr,CmdFull}|[]],Body)
-    when is_list(CmdStr) andalso is_list(CmdFull) ->
-  case string:rstr(Body,CmdStr) > 0 of
-    false -> false;
-    true -> CmdFull
-  end;
-has_valid_command([{CmdStr,CmdFull}|T],Body)
-    when is_list(CmdStr) andalso is_list(CmdFull) ->
-  case string:rstr(Body,CmdStr) > 0 of
-    false -> has_valid_command(T,Body);
-    true  -> CmdFull
-  end;
-has_valid_command(CommandList, Body) ->
-  throw({jane_invalid_command_list,
-        {command_list, CommandList},
-        {message_body, Body}}).
+
+
+has_valid_command([], _) ->
+  false;
+has_valid_command([Vocabulary|Tail],Body) ->
+  case string:str(Body,element(1, Vocabulary)) of
+    0 -> has_valid_command(Tail, Body);
+    _ -> command(Vocabulary)
+  end.
+
+command({_Word,Command}) ->
+  Command;
+command({_Word,Command,ReturnText}) ->
+  io:format("~n{Command,ReturnText = {~p,~p}~n", [Command,ReturnText]),
+  {Command,ReturnText}.
 
 handle_presence(Session, Packet, _Presence) ->
   case exmpp_jid:make(_From = Packet#received_packet.from) of
