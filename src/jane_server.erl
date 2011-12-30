@@ -118,14 +118,14 @@ handle_message(Session, Packet, TypeAttr) ->
   Body = exmpp_message:get_body(Packet),
   To   = exmpp_xml:get_attribute(Packet, <<"from">>, "unknown"),
   From = exmpp_xml:get_attribute(Packet, <<"to">>, "unknown"),
-  [MucID|_Resource] = string:tokens(binary_to_list(To), "/"),
+  [MucID|Resource] = string:tokens(binary_to_list(To), "/"),
   SendPkt = exmpp_xml:set_attribute(
     exmpp_xml:set_attribute(
       exmpp_xml:set_attribute(
         exmpp_xml:append_child(
           exmpp_xml:element("jabber:client",
             message),
-          create_response(Body)),
+          create_response(Body,[{name,Resource}])),
         <<"from">>,
         From),
       <<"to">>,
@@ -135,7 +135,8 @@ handle_message(Session, Packet, TypeAttr) ->
   exmpp_session:send_packet(Session, SendPkt).
 
 %% Handle bot commands here and return message body for XMPP reply
-create_response(Body) when is_binary(Body) ->
+create_response(Body,MetaData) when is_binary(Body) and is_list(MetaData) ->
+  io:format("~nMeta name: ~p~n",[get_metadata(name, MetaData)]),
   case has_valid_command(?COMMANDS,binary_to_list(Body)) of
     false ->
       exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body),string:concat( "I don't understand ",Body));
@@ -143,6 +144,13 @@ create_response(Body) when is_binary(Body) ->
       Result = os:cmd(Command),
       exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body),Result)
   end.
+
+get_metadata(_Key,[{_Key, Value}|_]) ->
+  Value;
+get_metadata(_Key,[_|[]]) ->
+  false;
+get_metadata(Key,[_|Tail]) ->
+  get_metadata(Key,Tail).
 
 has_valid_command([{CmdStr,CmdFull}|[]],Body)
     when is_list(CmdStr) andalso is_list(CmdFull) ->
