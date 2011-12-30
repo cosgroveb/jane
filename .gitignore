@@ -7,3 +7,4 @@ bak
 ebin/*.app
 bot-test/*
 rel
+src/jane.app.src

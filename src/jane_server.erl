@@ -145,7 +145,8 @@ create_response(Body,MetaData) when is_binary(Body) and is_list(MetaData) ->
     {Command, ReturnText} ->
       NewCommand = [interpolate(X, MetaData) ++ " " || X <- string:tokens(Command, " ")],
       os:cmd(NewCommand),
-      exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body), ReturnText);
+      NewReturnText = [interpolate(X, MetaData) ++ " " || X <- string:tokens(ReturnText, " ")],
+      exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body), NewReturnText);
     Command ->
       NewCommand = [interpolate(X, MetaData) ++ " " || X <- string:tokens(Command, " ")],
       exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body), os:cmd(NewCommand))
