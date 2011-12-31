@@ -1,9 +1,10 @@
-jane: just another erlang bot
+jane:
 
 Description
 
 jane is an Erlang XMPP bot I'm working on to teach myself the basics of Erlang and
 OTP.
+
 
 jane hangs out in Multi-User Chat and responds to pre-defined commands. Right now,
 all it does is execute shell commands and return the result in an XMPP message.
@@ -49,7 +50,7 @@ Now, since our release wasn't fully generated, we'll start jane manually:
 >joining_chat.
 
 
-There aren't any tests yet. 
+There aren't any tests yet.
 
 
 Todos

@@ -1,10 +1,9 @@
 *.beam
 *.old
-bak/*
 bak
 *.dump
 .erlang
 ebin/*.app
-bot-test/*
-rel
 src/jane.app.src
+bot-test/
+rel/jane
