@@ -1,63 +1,71 @@
-jane:
+jane
 
-Description
+**Description**
 
-jane is an Erlang XMPP bot I'm working on to teach myself the basics of Erlang and
-OTP.
+**jane** is an Erlang XMPP bot I'm working on to teach myself the basics of Erlang and OTP.
 
+**jane** hangs out in Multi-User Chat and responds to pre-defined commands. Right now, all it does is execute shell commands and return the result in an XMPP message.
 
-jane hangs out in Multi-User Chat and responds to pre-defined commands. Right now,
-all it does is execute shell commands and return the result in an XMPP message.
+The commands it responds to are defined in jane.app.src (this needs to go into a separate configuration file). In the commands tuple, the format is {"alias","command args"} where the alias is the command you send to jane in a chat message like:
 
+>me: jane date
+>jane: Mon Jan  2 23:53:39 CST 2012
 
-The commands it responds to are defined in jane.app.src (this needs to go into a
-separate configuration file). In the commands tuple, the format is
-{"alias","command args"} where the alias is the command you send to jane in a chat
-message like:
+jane will also interpolate some things from XMPP, prefixed by a dollar sign ($). Currently, that is just the alias of the message sender. In jane.app.src you can define the command tuple like the following:
 
->jane: date
+>{"hi", "echo hello $sender"}.
 
+jane will respond like so:
 
-Installation (assuming you already have Erlang, at least R12)
+>me: hi jane
+>jane: hello Brian
 
+One final thing you can do is over-ride the output of a command. By default, you'll get the result of the shell command from stdin. If you do something like the following in jane.app.src
 
-First, configure jane's connection settings by editing src/jane.app.src.
+{"howdy", "echo 'you will not see this output", "howdy $sender"}
 
+You'll get:
 
-Then:
+>me: howdy jane
+>jane: howdy Brian
 
+Interpolation won't affect things that aren't defined, that you might expect to have in your environment. For instance, you can add *{"where are your bins?", "echo $PATH"}* to jane.app.src, and jane will respond by exactly how you expect.
 
->cd jane
->./rebar clean compile generate
+**Prerequisites**
 
+* gcc
+* autotools
+* make
 
-If the previous step fails to include xmpp, get it from https://github.com/processone/exmpp,
-and install it. Next, if you had to install xmpp yourself:
+**Installation**
 
+Move the example *.app.src file.
 
->./rebar clean compile generate
+```
+mv rel/jane.app.src.example rel/jane.app.src
+```
 
+Edit the connection information for your XMPP environment. I find it helpful to have a local instance of ejabberd running for development.
 
-Now, since our release wasn't fully generated, we'll start jane manually:
+```
+vim rel/jane.app.src
+```
 
+Compile using **rebar**. It will pull in all the pre-requisites for you and build a fully functioning OTP release.
 
->erl -pa ebin
+```
+./rebar -v get-deps compile generate force=1
+```
 
+You can now run jane
 
->1>application:start(jane).
->ok.
->2>jane_server:join_chat().
->joining_chat.
+```
+./rel/jane/bin/jane console
+Erlang R15B (erts-5.9) [source] [64-bit] [smp:8:8] [async-threads:5] [hipe] [kernel-poll:true]
+Eshell V5.9  (abort with ^G)
+(jane@127.0.0.1)1> jane_server:join_chat().
+joining
+```
 
-
-There aren't any tests yet.
-
-
-Todos
-
-
-* Tests
-* ???
-* Profit!
-* Take advantage of concurrency by moving the logic to handle commands and return XMPP output into workers
+Now you can chat with **jane** on your XMPP server!
 
