@@ -74,5 +74,6 @@ Now you can chat with **jane** on your XMPP server!
 
 ##Contributors
 cosgroveb (https://github.com/cosgroveb)
+
 plainlystated (https://github.com/plainlystated)
 
