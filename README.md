@@ -1,6 +1,6 @@
-jane
+# jane
 
-**Description**
+## Description
 
 **jane** is an Erlang XMPP bot I'm working on to teach myself the basics of Erlang and OTP.
 
@@ -31,13 +31,13 @@ You'll get:
 
 Interpolation won't affect things that aren't defined, that you might expect to have in your environment. For instance, you can add *{"where are your bins?", "echo $PATH"}* to jane.app.src, and jane will respond by exactly how you expect.
 
-**Prerequisites**
+## Prerequisites
 
 * gcc
 * autotools
 * make
 
-**Installation**
+##Installation
 
 Move the example *.app.src file.
 
