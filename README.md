@@ -39,6 +39,7 @@ Interpolation won't affect things that aren't defined, that you might expect to 
 * autotools
 * make
 * erlang (if you don't have it, you should be able to simply "brew install erlang")
+* libxml2-dev (ubuntu)
 
 ##Installation
 
