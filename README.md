@@ -18,6 +18,7 @@ jane will also interpolate some things from XMPP, prefixed by a dollar sign ($).
 jane will respond like so:
 
 >me: hi jane
+
 >jane: hello Brian
 
 One final thing you can do is over-ride the output of a command. By default, you'll get the result of the shell command from stdin. If you do something like the following in jane.app.src
@@ -27,6 +28,7 @@ One final thing you can do is over-ride the output of a command. By default, you
 You'll get:
 
 >me: howdy jane
+
 >jane: howdy Brian
 
 Interpolation won't affect things that aren't defined, that you might expect to have in your environment. For instance, you can add *{"where are your bins?", "echo $PATH"}* to jane.app.src, and jane will respond by exactly how you expect.
