@@ -3,7 +3,5 @@
 bak
 *.dump
 .erlang
-ebin/*.app
-src/jane.app.src
 bot-test/
-rel/jane
+
