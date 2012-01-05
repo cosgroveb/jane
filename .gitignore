@@ -1,7 +1,9 @@
 *.beam
 *.old
-bak
+*bak
 *.dump
 .erlang
 bot-test/
-
+rel/jane/*
+*.bt
+src/jane.app.src
