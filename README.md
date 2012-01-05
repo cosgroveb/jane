@@ -10,13 +10,13 @@
 Move the example app.src file.
 
 ```
-mv rel/jane.app.src.example rel/jane.app.src
+cp src/jane.app.src.example src/jane.app.src
 ```
 
 Edit the connection information for your XMPP environment. I find it helpful to have a local instance of ejabberd running for development.
 
 ```
-vim rel/jane.app.src
+vim src/jane.app.src
 ```
 
 Compile using **rebar**.
