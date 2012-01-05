@@ -1,5 +1,42 @@
 # jane
 
+## Prerequisites
+
+* erlang (if you don't have it, you should be able to simply "brew install erlang")
+* exmpp (get it from https://github.com/processone/exmpp)
+
+##Installation
+
+Move the example app.src file.
+
+```
+mv rel/jane.app.src.example rel/jane.app.src
+```
+
+Edit the connection information for your XMPP environment. I find it helpful to have a local instance of ejabberd running for development.
+
+```
+vim rel/jane.app.src
+```
+
+Compile using **rebar**.
+
+```
+./rebar -v clean compile generate force=1
+```
+
+You can now run jane
+
+```
+./rel/jane/bin/jane console
+Erlang R15B (erts-5.9) [source] [64-bit] [smp:8:8] [async-threads:5] [hipe] [kernel-poll:true]
+Eshell V5.9  (abort with ^G)
+(jane@127.0.0.1)1> jane_server:join_chat().
+joining
+```
+
+Now you can chat with **jane** on your XMPP server!
+
 ## Description
 
 **jane** is an Erlang XMPP bot I'm working on to teach myself the basics of Erlang and OTP.
@@ -32,46 +69,6 @@ You'll get:
 >jane: howdy Brian
 
 Interpolation won't affect things that aren't defined, that you might expect to have in your environment. For instance, you can add *{"where are your bins?", "echo $PATH"}* to jane.app.src, and jane will respond by exactly how you expect.
-
-## Prerequisites
-
-* gcc
-* autotools
-* make
-* erlang (if you don't have it, you should be able to simply "brew install erlang")
-* libxml2-dev (ubuntu)
-
-##Installation
-
-Move the example *.app.src file.
-
-```
-mv rel/jane.app.src.example rel/jane.app.src
-```
-
-Edit the connection information for your XMPP environment. I find it helpful to have a local instance of ejabberd running for development.
-
-```
-vim rel/jane.app.src
-```
-
-Compile using **rebar**. It will pull in all the pre-requisites for you and build a fully functioning OTP release.
-
-```
-./rebar -v get-deps compile generate force=1
-```
-
-You can now run jane
-
-```
-./rel/jane/bin/jane console
-Erlang R15B (erts-5.9) [source] [64-bit] [smp:8:8] [async-threads:5] [hipe] [kernel-poll:true]
-Eshell V5.9  (abort with ^G)
-(jane@127.0.0.1)1> jane_server:join_chat().
-joining
-```
-
-Now you can chat with **jane** on your XMPP server!
 
 ##Contributors
 cosgroveb (https://github.com/cosgroveb)
