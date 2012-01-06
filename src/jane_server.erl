@@ -106,7 +106,7 @@ should_handle_message(Record) ->
   Packet = Record#received_packet.raw_packet,
   Body   = exmpp_message:get_body(Packet),
   IsFromSelf = SelfJID == exmpp_jid:make(Record#received_packet.from),
-  HasBotName = string:rstr(binary_to_list(Body),binary_to_list(BotName)) > 0,
+  HasBotName = string:rstr(string:to_lower(binary_to_list(Body)),string:to_lower(binary_to_list(BotName))) > 0,
   (IsFromSelf == false) and
   (HasBotName == true) and
   (IsOldMessage == false).
