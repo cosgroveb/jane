@@ -5,7 +5,7 @@
 -include_lib("exmpp/include/exmpp_client.hrl").
 -include_lib("jane.hrl").
 
--export([start_link/0, join_chat/0, setup_and_join/0]).
+-export([start_link/0]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
@@ -17,16 +17,11 @@ start_link() ->
 
 init([]) ->
   application:start(exmpp),
+  spawn(fun setup_and_join/0),
   {ok, []}.
 
-join_chat() ->
-  gen_server:call(?MODULE, join_chat).
 
 %% api callbacks
-
-handle_call(join_chat, _From, _State) ->
-  Pid = spawn(fun jane_server:setup_and_join/0),
-  {reply, joining, Pid};
 
 handle_call(_Request, _From, State) ->
   Reply = ok,
