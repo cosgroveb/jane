@@ -71,7 +71,9 @@ You'll get:
 Interpolation won't affect things that aren't defined, that you might expect to have in your environment. For instance, you can add *{"where are your bins?", "echo $PATH"}* to jane.app.src, and jane will respond by exactly how you expect.
 
 ##Contributors
+
 cosgroveb (https://github.com/cosgroveb)
 
 plainlystated (https://github.com/plainlystated)
 
+benmills (https://github.com/benmills)
