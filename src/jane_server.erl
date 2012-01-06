@@ -12,25 +12,39 @@
 
 -define(SERVER, ?MODULE).
 
+-record(state, {session}).
+
 start_link() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init([]) ->
   application:start(exmpp),
-  spawn(fun setup_and_join/0),
-  {ok, []}.
-
+  Session = setup_and_join(),
+  {ok, #state{session = Session}, 0}.
 
 %% api callbacks
 
 handle_call(_Request, _From, State) ->
-  Reply = ok,
-  {reply, Reply, State}.
-
-handle_cast(_Msg, State) ->
   {noreply, State}.
 
-handle_info(_Info, State) ->
+handle_cast(_Request, State) ->
+  {noreply, State}.
+
+handle_info(Record, #state{session=Session}) when ?IS_GROUP_MESSAGE(Record) ->
+  case should_handle_message(Record) of
+    true ->
+      handle_message(Session,
+       Record#received_packet.raw_packet,
+       Record#received_packet.type_attr);
+    false -> null
+  end,
+  {noreply, #state{session=Session}};
+handle_info(Record, #state{session=Session}) when ?IS_PRESENCE(Record) ->
+  handle_presence(Session,
+    Record,
+    Record#received_packet.raw_packet),
+  {noreply, #state{session=Session}};
+handle_info(_Record, State) ->
   {noreply, State}.
 
 terminate(_Reason, _State) ->
@@ -54,7 +68,7 @@ setup_and_join() ->
       exmpp_presence:set_status(
         exmpp_presence:available(),
         ""))),
-  loop(Session).
+  Session.
 
 join_room_stanza(Status) ->
   exmpp_xml:remove_element(
@@ -68,30 +82,6 @@ join_room_stanza(Status) ->
         ),<<"to">>,?MUC_ROOM),
       <<"from">>,?USER_LOGIN),
     status).
-
-%% Server-to-client messages in jabber:client can be of three types:
-%% message, presence, and iq.
-loop(Session) ->
-  receive
-    stop ->
-      exmpp_session:stop(Session);
-    Record when ?IS_GROUP_MESSAGE(Record) ->
-      case should_handle_message(Record) of
-        true ->
-          handle_message(Session,
-           Record#received_packet.raw_packet,
-           Record#received_packet.type_attr);
-        false -> null
-      end,
-      loop(Session);
-    Record when ?IS_PRESENCE(Record) ->
-      handle_presence(Session,
-        Record,
-        Record#received_packet.raw_packet),
-      loop(Session);
-    _Record ->
-      loop(Session)
-    end.
 
 %% Helper for loop
 should_handle_message(Record) ->
