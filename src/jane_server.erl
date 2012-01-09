@@ -19,8 +19,9 @@ start_link() ->
 
 init([]) ->
   application:start(exmpp),
-  Session = setup_and_join(),
-  {ok, #state{session = Session}, 0}.
+  Session = xmpp_account:authenticate(?USER_LOGIN, ?USER_PASSWORD, ?SERVER_DOMAIN),
+  JoinedSession = xmpp_account:join_room(Session, ?USER_LOGIN, ?MUC_ROOM),
+  {ok, #state{session = JoinedSession}, 0}.
 
 %% api callbacks
 
@@ -53,40 +54,10 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
 
-setup_and_join() ->
-  Session = exmpp_session:start({1,0}),
-  [UserName, UserDomain] = string:tokens(?USER_LOGIN,"@"),
-  JID     = exmpp_jid:make(UserName, UserDomain, random),
-  Status  = exmpp_presence:set_status(exmpp_presence:unavailable(), ""),
-  exmpp_session:auth_info(Session, JID, ?USER_PASSWORD),
-  exmpp_session:connect_TCP(Session, ?SERVER_DOMAIN, 5222),
-  exmpp_session:login(Session, "PLAIN"),
-  exmpp_session:send_packet(Session, Status),
-  exmpp_session:send_packet(
-    Session,
-    join_room_stanza(
-      exmpp_presence:set_status(
-        exmpp_presence:available(),
-        ""))),
-  Session.
-
-join_room_stanza(Status) ->
-  exmpp_xml:remove_element(
-    exmpp_xml:set_attribute(
-      exmpp_xml:set_attribute(
-        exmpp_xml:append_child(
-          Status,
-          exmpp_xml:element(
-            "http://jabber.org/protocol/muc",
-            x)
-        ),<<"to">>,?MUC_ROOM),
-      <<"from">>,?USER_LOGIN),
-    status).
-
 %% Helper for loop
 should_handle_message(Record) ->
-  IsOldMessage = exmpp_xml:has_element(Record#received_packet.raw_packet, x),
   SelfJID = exmpp_jid:parse(?MUC_ROOM),
+  IsOldMessage = exmpp_xml:has_element(Record#received_packet.raw_packet, x),
   {_,_,_,_,BotName} = SelfJID,
   Packet = Record#received_packet.raw_packet,
   Body   = exmpp_message:get_body(Packet),
