@@ -18,28 +18,25 @@ start_link() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init([]) ->
-  application:start(exmpp),
   Session = xmpp_account:connect(?USER_LOGIN, ?USER_PASSWORD, ?SERVER_DOMAIN),
   JoinedSession = xmpp_account:join_room(Session, ?USER_LOGIN, ?MUC_ROOM),
   {ok, #state{session = JoinedSession}, 0}.
 
-handle_info(Record, #state{session=Session}) when ?IS_GROUP_MESSAGE(Record) ->
-  case xmpp_account:get_message(?MUC_ROOM, Record) of
-    {To, From, Body} ->
-      gen_server:cast(jane_command_server, {To, From, Body, Session});
-      _ -> pass
-  end,
-  {noreply, #state{session=Session}};
-handle_info(Record, Session=#state{session=Session}) when ?IS_PRESENCE(Record) ->
-  xmpp_chat:handle_presence(Session, Record),
+handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
+  Message = xmpp_account:get_message(?MUC_ROOM, Request),
+  gen_server:cast(jane_command_server, {process_message, Message}),
+  {noreply, State};
+handle_info(Request, Session=#state{session=Session}) when ?IS_PRESENCE(Request) ->
+  xmpp_chat:handle_presence(Session, Request),
   {noreply, Session};
-handle_info(_Record, State) ->
+handle_info(_Request, State) ->
   {noreply, State}.
 
 handle_call(_Request, _From, State) ->
   {noreply, State}.
 
-handle_cast(_Request, State) ->
+handle_cast({send_message, {From, To, Reply}}, State=#state{session=Session}) ->
+  xmpp_account:send_message(Session, From, To, Reply),
   {noreply, State}.
 
 terminate(_Reason, _State) ->
@@ -47,4 +44,3 @@ terminate(_Reason, _State) ->
 
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
-

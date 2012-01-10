@@ -6,6 +6,7 @@
 -export([connect/3, join_room/3, get_message/2, send_message/4, handle_presence/2]).
 
 connect(Login, Password, Domain) ->
+  application:start(exmpp),
   Session = exmpp_session:start({1,0}),
   [UserName, UserDomain] = string:tokens(Login,"@"),
   JID     = exmpp_jid:make(UserName, UserDomain, random),
@@ -64,15 +65,15 @@ presence_subscribe(Session, Recipient) ->
 
 get_message(_, #received_packet{type_attr="error"}) ->
     error;
-get_message(Room, Record=#received_packet{raw_packet=Packet}) ->
+get_message(Room, Request=#received_packet{raw_packet=Packet}) ->
   SelfJID = exmpp_jid:parse(Room),
   {_,_,_,_,BotName} = SelfJID,
   Body = exmpp_message:get_body(Packet),
   To   = exmpp_xml:get_attribute(Packet, <<"from">>, "unknown"),
   From = exmpp_xml:get_attribute(Packet, <<"to">>, "unknown"),
 
-  ShouldHandleMessage = (is_old_message(Record) == false) and
-                        (is_from_self(Record, SelfJID) == false) and
+  ShouldHandleMessage = (is_old_message(Request) == false) and
+                        (is_from_self(Request, SelfJID) == false) and
                         has_botname(Body, BotName),
 
   if
@@ -99,11 +100,11 @@ send_message(Session, From, To, Message) ->
     groupchat),
   exmpp_session:send_packet(Session, SendPkt).
 
-is_old_message(Record) ->
-  exmpp_xml:has_element(Record#received_packet.raw_packet, x).
+is_old_message(Request) ->
+  exmpp_xml:has_element(Request#received_packet.raw_packet, x).
 
-is_from_self(Record, SelfJID) ->
-  SelfJID == exmpp_jid:make(Record#received_packet.from).
+is_from_self(Request, SelfJID) ->
+  SelfJID == exmpp_jid:make(Request#received_packet.from).
 
 has_botname(Body, BotName) ->
   string:rstr(string:to_lower(binary_to_list(Body)),string:to_lower(binary_to_list(BotName))) > 0.

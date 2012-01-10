@@ -21,7 +21,7 @@ init([]) ->
 handle_call(_Request, _From, State) ->
   {noreply, State}.
 
-handle_cast({To, From, Body, Session}, State) ->
+handle_cast({process_message, {To, From, Body}}, State) ->
   MetaData = [{sender, lists:nth(2,string:tokens(binary_to_list(To), "/"))}],
   Reply = case has_valid_command(?COMMANDS, binary_to_list(Body)) of
     false ->
@@ -35,7 +35,9 @@ handle_cast({To, From, Body, Session}, State) ->
     Command ->
       [interpolate(X, MetaData) ++ " " || X <- string:tokens(Command, " ")]
   end,
-  xmpp_account:send_message(Session, From, To, Reply),
+  gen_server:cast(jane_server, {send_message, {From, To, Reply}}),
+  {noreply, State};
+handle_cast(_, State) ->
   {noreply, State}.
 
 handle_info(_Record, State) ->
