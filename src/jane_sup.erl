@@ -27,4 +27,5 @@ start_link() ->
 
 init([]) ->
   JaneServer = ?CHILD(jane_server, worker),
-    {ok, { {one_for_one, 5, 10}, [JaneServer]} }.
+  CommandServer = ?CHILD(jane_command_server, worker),
+  {ok, { {one_for_one, 5, 10}, [JaneServer, CommandServer]} }.
