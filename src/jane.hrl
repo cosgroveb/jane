@@ -2,6 +2,7 @@
 -define(USER_LOGIN,    element(2,application:get_env(jane, user_login))).
 -define(USER_PASSWORD, element(2,application:get_env(jane, user_password))).
 -define(SERVER_DOMAIN, element(2,application:get_env(jane, server_domain))).
+-define(MUC_ROOM_NAME, element(2,application:get_env(jane, muc_room_name))).
 -define(MUC_ROOM,      element(2,application:get_env(jane, muc_room))).
 -define(COMMANDS,      element(2,application:get_env(jane, commands))).
 
