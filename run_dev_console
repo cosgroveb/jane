@@ -1,0 +1,2 @@
+echo "Running Jane Console\n==================\nRun application:start(jane). and optionally sync:go().\n\n";
+erl -pa ebin -pa deps/*/ebin

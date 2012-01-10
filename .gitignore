@@ -8,3 +8,4 @@ rel/jane/*
 *.bt
 src/jane.app.src
 ebin/jane.app
+deps
