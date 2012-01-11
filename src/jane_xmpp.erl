@@ -1,4 +1,4 @@
--module(xmpp_account).
+-module(jane_xmpp).
 
 -include_lib("exmpp/include/exmpp.hrl").
 -include_lib("exmpp/include/exmpp_client.hrl").
