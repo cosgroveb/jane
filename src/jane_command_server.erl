@@ -27,7 +27,7 @@ handle_cast({process_message, {To, From, Body}}, State) ->
     {error, _} -> "Sorry, I don't know what you mean.";
     {ok, Output} -> Output
   end,
-  gen_server:cast(jane_server, {send_message, {From, To, Reply}}),
+  gen_server:cast(jane_chat_server, {send_message, {From, To, Reply}}),
   {noreply, State};
 handle_cast(_, State) ->
   {noreply, State}.

@@ -1,4 +1,4 @@
--module(jane_server).
+-module(jane_chat_server).
 -behavior(gen_server).
 
 -include_lib("exmpp/include/exmpp.hrl").
