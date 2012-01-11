@@ -33,7 +33,7 @@ handle_cast({process_message, {To, From, Body}}, State) ->
       _ = os:cmd(NewCommand),
       [interpolate(X, MetaData) ++ " " || X <- string:tokens(ReturnText, " ")];
     Command ->
-      [interpolate(X, MetaData) ++ " " || X <- string:tokens(Command, " ")]
+      os:cmd([interpolate(X, MetaData) ++ " " || X <- string:tokens(Command, " ")])
   end,
   gen_server:cast(jane_server, {send_message, {From, To, Reply}}),
   {noreply, State};
