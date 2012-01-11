@@ -18,26 +18,11 @@ connect(Login, Password, Domain) ->
   Session.
 
 join_room(Session, Login, Room) ->
-  exmpp_session:send_packet(
-    Session,
-    join_room_stanza(Room, Login,
-      exmpp_presence:set_status(
-        exmpp_presence:available(),
-        ""))),
+  Presence = exmpp_presence:presence(available, ""),
+  Stanza = exmpp_xml:append_child(Presence, exmpp_xml:element("http://jabber.org/protocol/muc", x)),
+  Packet = exmpp_xml:set_attributes(Stanza,[{<<"to">>, Room}, {<<"from">>, Login}]),
+  exmpp_session:send_packet(Session, Packet),
   Session.
-
-join_room_stanza(Room, Login, Status) ->
-  exmpp_xml:remove_element(
-    exmpp_xml:set_attribute(
-      exmpp_xml:set_attribute(
-        exmpp_xml:append_child(
-          Status,
-          exmpp_xml:element(
-            "http://jabber.org/protocol/muc",
-            x)
-        ),<<"to">>, Room),
-      <<"from">>, Login),
-    status).
 
 handle_presence(Session, #received_packet{raw_packet=Packet}) ->
   case exmpp_jid:make(_From = Packet#received_packet.from) of
