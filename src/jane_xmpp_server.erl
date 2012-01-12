@@ -1,9 +1,63 @@
--module(jane_xmpp).
+-module(jane_xmpp_server).
+-behavior(gen_server).
 
 -include_lib("exmpp/include/exmpp.hrl").
 -include_lib("exmpp/include/exmpp_client.hrl").
+-include_lib("jane.hrl").
 
--export([connect/3, join_room/3, get_message/2, send_message/4]).
+-export([start_link/0, send_message/3]).
+
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2,
+         terminate/2, code_change/3]).
+
+-define(SERVER, ?MODULE).
+
+-record(state, {session}).
+
+%%%===================================================================
+%%% API
+%%%===================================================================
+
+start_link() ->
+  gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+
+send_message(From, To, Reply) ->
+  gen_server:cast(jane_xmpp_server, {send_message, {From, To, Reply}}).
+
+%%%===================================================================
+%%% gen_server callbacks
+%%%===================================================================
+
+init([]) ->
+  Session = connect(?USER_LOGIN, ?USER_PASSWORD, ?SERVER_DOMAIN),
+  JoinedSession = join_room(Session, ?USER_LOGIN, ?MUC_ROOM),
+  {ok, #state{session = JoinedSession}, 0}.
+
+handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
+  Message = get_message(?MUC_ROOM, Request),
+  io:format("~nMessage: ~n~p",[Message]),
+  jane_command_server:process_message(Message),
+  {noreply, State};
+handle_info(_Request, State) ->
+  {noreply, State}.
+
+handle_call(_Request, _From, State) ->
+  {noreply, State}.
+
+handle_cast({send_message, {From, To, Reply}}, State=#state{session=Session}) ->
+  io:format("~n{From, To, Reply}~n{~p,~p,~p}~n",[From, To, Reply]),
+  send_message(Session, From, To, Reply),
+  {noreply, State}.
+
+terminate(_Reason, _State) ->
+  ok.
+
+code_change(_OldVsn, State, _Extra) ->
+  {ok, State}.
+
+%%%===================================================================
+%%% Private
+%%%===================================================================
 
 connect(Login, Password, Domain) ->
   application:start(exmpp),
@@ -40,7 +94,7 @@ get_message(Room, Request=#received_packet{raw_packet=Packet, type_attr="groupch
     ShouldHandleMessage == true  -> {To, From, Body};
     ShouldHandleMessage == false -> {nomessage}
   end;
-get_message(_, Request) ->
+get_message(_, _Request) ->
   {error}.
 
 send_message(Session, From, To, Message) ->

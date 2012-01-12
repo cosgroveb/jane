@@ -23,6 +23,6 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-  JaneChatServer = ?CHILD(jane_chat_server, worker),
+  JaneXmppServer = ?CHILD(jane_xmpp_server, worker),
   CommandServer = ?CHILD(jane_command_server, worker),
-  {ok, { {one_for_one, 5, 10}, [JaneChatServer, CommandServer]} }.
+  {ok, { {one_for_one, 5, 10}, [JaneXmppServer, CommandServer]} }.
