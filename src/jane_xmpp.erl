@@ -23,47 +23,29 @@ join_room(Session, Login, Room) ->
   Session.
 
 get_message(_, #received_packet{type_attr="error"}) ->
-    error;
-get_message(Room, Request=#received_packet{raw_packet=Packet}) ->
+  {error};
+get_message(Room, Request=#received_packet{raw_packet=Packet}) when
+    length(Request#received_packet.raw_packet#xmlel.children) < 2 ->
+
   SelfJID = exmpp_jid:parse(Room),
   {_,_,_,_,BotName} = SelfJID,
   Body = exmpp_message:get_body(Packet),
   To   = exmpp_xml:get_attribute(Packet, <<"from">>, "unknown"),
   From = exmpp_xml:get_attribute(Packet, <<"to">>, "unknown"),
 
-  ShouldHandleMessage = (is_old_message(Request) == false) and
-                        (is_from_self(Request, SelfJID) == false) and
-                        has_botname(Body, BotName),
-
-  if
-    ShouldHandleMessage == true  -> {To, From, Body};
-    ShouldHandleMessage == false -> {nomessage}
-  end.
+  case has_botname(Body, BotName) of
+    true  -> {To, From, Body};
+    false -> {nomessage}
+  end;
+get_message(_, _Request) ->
+  {error}.
 
 send_message(Session, From, To, Message) ->
-  [MucID|_Resource] = string:tokens(binary_to_list(To), "/"),
-  XmppMessage = exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body), Message),
-
-  SendPkt = exmpp_xml:set_attribute(
-    exmpp_xml:set_attribute(
-      exmpp_xml:set_attribute(
-        exmpp_xml:append_child(
-          exmpp_xml:element("jabber:client",
-            message),
-          XmppMessage),
-        <<"from">>,
-        From),
-      <<"to">>,
-      MucID),
-    <<"type">>,
-    groupchat),
-  exmpp_session:send_packet(Session, SendPkt).
-
-is_old_message(Request) ->
-  exmpp_xml:has_element(Request#received_packet.raw_packet, x).
-
-is_from_self(Request, SelfJID) ->
-  SelfJID == exmpp_jid:make(Request#received_packet.from).
+  [MucId|_Res] = string:tokens(binary_to_list(To), "/"),
+  BodyXmlEl    = exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body), Message),
+  MessageXmlEl = exmpp_xml:append_child(exmpp_xml:element("jabber:client", message), BodyXmlEl),
+  PktWithAttrs = exmpp_xml:set_attributes(MessageXmlEl, [{<<"from">>, From}, {<<"to">>, MucId}, {<<"type">>, groupchat}]),
+  exmpp_session:send_packet(Session, PktWithAttrs).
 
 has_botname(Body, BotName) ->
   string:rstr(string:to_lower(binary_to_list(Body)),string:to_lower(binary_to_list(BotName))) > 0.
