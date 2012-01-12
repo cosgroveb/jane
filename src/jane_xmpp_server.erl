@@ -35,7 +35,6 @@ init([]) ->
 
 handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
   Message = get_message(?MUC_ROOM, Request),
-  io:format("~nMessage: ~n~p",[Message]),
   jane_command_server:process_message(Message),
   {noreply, State};
 handle_info(_Request, State) ->
@@ -45,7 +44,6 @@ handle_call(_Request, _From, State) ->
   {noreply, State}.
 
 handle_cast({send_message, {From, To, Reply}}, State=#state{session=Session}) ->
-  io:format("~n{From, To, Reply}~n{~p,~p,~p}~n",[From, To, Reply]),
   send_message(Session, From, To, Reply),
   {noreply, State}.
 
@@ -110,5 +108,7 @@ is_old_message(Request) ->
 is_from_self(Request, SelfJID) ->
   SelfJID == exmpp_jid:make(Request#received_packet.from).
 
+has_botname(undefined, _BotName) ->
+  false;
 has_botname(Body, BotName) ->
   string:rstr(string:to_lower(binary_to_list(Body)),string:to_lower(binary_to_list(BotName))) > 0.
