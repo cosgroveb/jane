@@ -3,6 +3,7 @@
 *bak
 *.dump
 .erlang
+.eunit
 bot-test/
 rel/jane/*
 *.bt
