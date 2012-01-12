@@ -23,7 +23,7 @@ handle_call(_Request, _From, State) ->
 
 handle_cast({process_message, {To, From, Body}}, State) ->
   Sender = lists:nth(2,string:tokens(binary_to_list(To), "/")),
-  Reply = case command:call(Sender, Body) of
+  Reply = case command:call(Sender, binary_to_list(Body)) of
     {error, _} -> "Sorry, I don't know what you mean.";
     {ok, Output} -> Output
   end,
