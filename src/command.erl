@@ -31,5 +31,20 @@ commands() ->
       os:cmd("uptime") end},
 
     {<<"where are your bins?">>, fun(_Sender, _Body) ->
-      os:cmd("echo $PATH") end}
+      os:cmd("echo $PATH") end},
+
+    {[<<"what is on sandbox?">>, <<"whats on sandbox">>, <<"sandbox revision">>], fun(_Sender, _Body) ->
+      os:cmd("curl -s -k \"https://sandbox.braintreegateway.com/revision\" | awk '{ print $1 }'") end},
+
+    {[<<"what is on prod?">>, <<"whats on prod">>, <<"production revision">>], fun(_Sender, _Body) ->
+      os:cmd("curl -s -k \"https://www.braintreegateway.com/revision\" | awk '{ print $1 }'") end},
+
+    {[<<"what is on qa?">>, <<"whats on qa">>, <<"qa revision">>], fun(_Sender, _Body) ->
+      os:cmd("curl -s -k \"https://www.braintreegateway.com/revision\" | awk '{ print $1 }'") end},
+
+    {[<<"what is on qa2?">>, <<"whats on qa2">>, <<"qa2 revision">>], fun(_Sender, _Body) ->
+      os:cmd("curl -s -k \"https://www.braintreegateway.com/revision\" | awk '{ print $1 }'") end},
+
+    {[<<"what is playing">>], fun(_Sender, _Body) ->
+      os:cmd("curl -s -H \"Accept: application/json\" http://jukebox2.local/playlist/current-track") end}
   ].
