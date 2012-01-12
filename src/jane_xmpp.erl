@@ -24,8 +24,7 @@ join_room(Session, Login, Room) ->
 
 get_message(_, #received_packet{type_attr="error"}) ->
   {error};
-get_message(Room, Request=#received_packet{raw_packet=Packet}) when
-    length(Request#received_packet.raw_packet#xmlel.children) < 2 ->
+get_message(Room, Request=#received_packet{raw_packet=Packet, type_attr="groupchat"}) ->
 
   SelfJID = exmpp_jid:parse(Room),
   {_,_,_,_,BotName} = SelfJID,
@@ -33,11 +32,15 @@ get_message(Room, Request=#received_packet{raw_packet=Packet}) when
   To   = exmpp_xml:get_attribute(Packet, <<"from">>, "unknown"),
   From = exmpp_xml:get_attribute(Packet, <<"to">>, "unknown"),
 
-  case has_botname(Body, BotName) of
-    true  -> {To, From, Body};
-    false -> {nomessage}
+  ShouldHandleMessage = (is_old_message(Request) == false) and
+                        (is_from_self(Request, SelfJID) == false) and
+                        has_botname(Body, BotName),
+
+  if
+    ShouldHandleMessage == true  -> {To, From, Body};
+    ShouldHandleMessage == false -> {nomessage}
   end;
-get_message(_, _Request) ->
+get_message(_, Request) ->
   {error}.
 
 send_message(Session, From, To, Message) ->
@@ -46,6 +49,12 @@ send_message(Session, From, To, Message) ->
   MessageXmlEl = exmpp_xml:append_child(exmpp_xml:element("jabber:client", message), BodyXmlEl),
   PktWithAttrs = exmpp_xml:set_attributes(MessageXmlEl, [{<<"from">>, From}, {<<"to">>, MucId}, {<<"type">>, groupchat}]),
   exmpp_session:send_packet(Session, PktWithAttrs).
+
+is_old_message(Request) ->
+  exmpp_xml:has_element(Request#received_packet.raw_packet, x).
+
+is_from_self(Request, SelfJID) ->
+  SelfJID == exmpp_jid:make(Request#received_packet.from).
 
 has_botname(Body, BotName) ->
   string:rstr(string:to_lower(binary_to_list(Body)),string:to_lower(binary_to_list(BotName))) > 0.
