@@ -3,18 +3,16 @@
 -include_lib("exmpp/include/exmpp.hrl").
 -include_lib("exmpp/include/exmpp_client.hrl").
 
--export([connect/3, join_room/3, get_message/2, send_message/4, handle_presence/2]).
+-export([connect/3, join_room/3, get_message/2, send_message/4]).
 
 connect(Login, Password, Domain) ->
   application:start(exmpp),
   Session = exmpp_session:start({1,0}),
   [UserName, UserDomain] = string:tokens(Login,"@"),
   JID     = exmpp_jid:make(UserName, UserDomain, random),
-  Status  = exmpp_presence:set_status(exmpp_presence:unavailable(), ""),
   exmpp_session:auth_info(Session, JID, Password),
   exmpp_session:connect_TCP(Session, Domain, 5222),
   exmpp_session:login(Session, "PLAIN"),
-  exmpp_session:send_packet(Session, Status),
   Session.
 
 join_room(Session, Login, Room) ->
@@ -23,30 +21,6 @@ join_room(Session, Login, Room) ->
   Packet = exmpp_xml:set_attributes(Stanza,[{<<"to">>, Room}, {<<"from">>, Login}]),
   exmpp_session:send_packet(Session, Packet),
   Session.
-
-handle_presence(Session, #received_packet{raw_packet=Packet}) ->
-  case exmpp_jid:make(_From = Packet#received_packet.from) of
-    JID ->
-      case Type = Packet#received_packet.type_attr of
-        "available" ->
-          ok;
-        "unavailable" ->
-          ok;
-        _ when (Type =:= "subscribe") or (Type =:= "subscribed") ->
-          presence_subscribed(Session, JID),
-          presence_subscribe(Session, JID)
-      end
-  end.
-
-presence_subscribed(Session, Recipient) ->
-  Presence_Subscribed = exmpp_presence:subscribed(),
-  Presence = exmpp_stanza:set_recipient(Presence_Subscribed, Recipient),
-  exmpp_session:send_packet(Session, Presence).
-
-presence_subscribe(Session, Recipient) ->
-  Presence_Subscribe = exmpp_presence:subscribe(),
-  Presence = exmpp_stanza:set_recipient(Presence_Subscribe, Recipient),
-  exmpp_session:send_packet(Session, Presence).
 
 get_message(_, #received_packet{type_attr="error"}) ->
     error;

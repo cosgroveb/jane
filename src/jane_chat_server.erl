@@ -37,9 +37,6 @@ handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
   Message = jane_xmpp:get_message(?MUC_ROOM, Request),
   jane_command_server:process_message(Message),
   {noreply, State};
-handle_info(Request, Session=#state{session=Session}) when ?IS_PRESENCE(Request) ->
-  jane_xmpp:handle_presence(Session, Request),
-  {noreply, Session};
 handle_info(_Request, State) ->
   {noreply, State}.
 
