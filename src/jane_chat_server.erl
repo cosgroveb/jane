@@ -5,7 +5,7 @@
 -include_lib("exmpp/include/exmpp_client.hrl").
 -include_lib("jane.hrl").
 
--export([start_link/0]).
+-export([start_link/0, send_message/3]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
@@ -14,8 +14,19 @@
 
 -record(state, {session}).
 
+%%%===================================================================
+%%% API
+%%%===================================================================
+
 start_link() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+
+send_message(From, To, Reply) ->
+  gen_server:cast(jane_chat_server, {send_message, {From, To, Reply}}).
+
+%%%===================================================================
+%%% gen_server callbacks
+%%%===================================================================
 
 init([]) ->
   Session = jane_xmpp:connect(?USER_LOGIN, ?USER_PASSWORD, ?SERVER_DOMAIN),
@@ -24,7 +35,7 @@ init([]) ->
 
 handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
   Message = jane_xmpp:get_message(?MUC_ROOM, Request),
-  gen_server:cast(jane_command_server, {process_message, Message}),
+  jane_command_server:process_message(Message),
   {noreply, State};
 handle_info(Request, Session=#state{session=Session}) when ?IS_PRESENCE(Request) ->
   jane_xmpp:handle_presence(Session, Request),
