@@ -5,7 +5,7 @@
 -include_lib("exmpp/include/exmpp_client.hrl").
 -include_lib("jane.hrl").
 
--export([start_link/0, send_message/3]).
+-export([start_link/0, send_message/3, send_message/1]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
@@ -20,6 +20,9 @@
 
 start_link() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+
+send_message(Body) ->
+  send_message(list_to_binary(?USER_LOGIN), list_to_binary(?MUC_ROOM), Body).
 
 send_message(From, To, Reply) ->
   gen_server:cast(jane_xmpp_server, {send_message, {From, To, Reply}}).
