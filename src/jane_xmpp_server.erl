@@ -4,11 +4,14 @@
 -include_lib("exmpp/include/exmpp.hrl").
 -include_lib("exmpp/include/exmpp_client.hrl").
 -include_lib("jane.hrl").
+-include_lib("eunit/include/eunit.hrl").
 
 -export([start_link/0, send_message/3, send_message/1]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
+
+-ifdef(TEST). -include("../test/jane_xmpp_server_test.hrl"). -endif.
 
 -define(SERVER, ?MODULE).
 
@@ -33,8 +36,8 @@ send_message(From, To, Reply) ->
 
 init([]) ->
   Session = connect(?USER_LOGIN, ?USER_PASSWORD, ?SERVER_DOMAIN),
-  JoinedSession = join_room(Session, ?USER_LOGIN, ?MUC_ROOM),
-  {ok, #state{session = JoinedSession}, 0}.
+  exmpp_session:send_packet(Session, join_room(?USER_LOGIN,?MUC_ROOM)),
+  {ok, #state{session = Session}, 0}.
 
 handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
   Message = get_message(?MUC_ROOM, Request),
@@ -70,12 +73,10 @@ connect(Login, Password, Domain) ->
   exmpp_session:login(Session, "PLAIN"),
   Session.
 
-join_room(Session, Login, Room) ->
+join_room(Login, Room) ->
   Presence = exmpp_presence:presence(available, ""),
   Stanza = exmpp_xml:append_child(Presence, exmpp_xml:element("http://jabber.org/protocol/muc", x)),
-  Packet = exmpp_xml:set_attributes(Stanza,[{<<"to">>, Room}, {<<"from">>, Login}]),
-  exmpp_session:send_packet(Session, Packet),
-  Session.
+  exmpp_xml:set_attributes(Stanza,[{<<"to">>, Room}, {<<"from">>, Login}]).
 
 get_message(_, #received_packet{type_attr="error"}) ->
   {error};
