@@ -47,7 +47,8 @@ commands() ->
       ApiResponse = ibrowse:send_req(ApiUrl, [], get, []),
       {ok, _StatusCode, _Headers, ResBody} = ApiResponse,
       [_|[WeatherConditions|_]] = re:split(ResBody, "</?h2>"),
-      re:replace(WeatherConditions, "</?.*?/?>", "", [global, {return,list}])
+      DegreedConditions = re:replace(WeatherConditions, "&deg;", "°", [global, {return,list}]),
+      re:replace(DegreedConditions, "</?.*?/?>", "", [global, {return,list}])
     end},
 
     {[<<"hello">>, <<"hi">>], fun(Sender, _Body) ->
