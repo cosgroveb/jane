@@ -1,5 +1,7 @@
 -module(command).
 -export([call/2]).
+-include_lib("eunit/include/eunit.hrl").
+-ifdef(TEST). -include("../test/command_test.hrl"). -endif.
 
 call(Sender, Body) ->
   case find_and_run_command(Sender, Body, commands()) of
