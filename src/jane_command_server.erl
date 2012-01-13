@@ -41,7 +41,7 @@ handle_cast({process_message, {To, From, Body}}, State) ->
       error_logger:info_msg("Command output: ~p~n", [Output]),
       Output
   end,
-  jane_xmpp_server:send_message(From, To, Reply),
+  jane_xmpp_server:send_message(Reply),
   {noreply, State};
 handle_cast(_, State) ->
   {noreply, State}.

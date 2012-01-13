@@ -76,11 +76,6 @@ commands() ->
       case length(CardNum) == 5 of
         false -> "Can't find card";
         true ->
-          application:start(crypto),
-          application:start(public_key),
-          application:start(ssl),
-          ibrowse:start(),
-
           XmlUrl = string:join(["https://", ?app_env(mingle_url), "/api/v2/projects/", ?app_env(mingle_project), "/cards/", string:sub_string(CardNum, 2), ".xml"], ""),
           Url = string:join(["https://", ?app_env(mingle_url), "/projects/", ?app_env(mingle_project), "/cards/", string:sub_string(CardNum, 2)], ""),
 
