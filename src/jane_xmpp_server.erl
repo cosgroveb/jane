@@ -69,13 +69,13 @@ connect(Login, Password, Domain) ->
   [UserName, UserDomain] = string:tokens(Login,"@"),
   JID     = exmpp_jid:make(UserName, UserDomain, random),
   exmpp_session:auth_info(Session, JID, Password),
-  exmpp_session:connect_TCP(Session, Domain, 5222),
+  exmpp_session:connect_TCP(Session, Domain, list_to_integer(?SERVER_PORT)),
   exmpp_session:login(Session, "PLAIN"),
   Session.
 
 join_room(Login, Room) ->
   Presence = exmpp_presence:presence(available, ""),
-  Stanza = exmpp_xml:append_child(Presence, exmpp_xml:element("http://jabber.org/protocol/muc", x)),
+  Stanza = exmpp_xml:append_child(Presence, exmpp_xml:element(?NS_MUC, x)),
   exmpp_xml:set_attributes(Stanza,[{<<"to">>, Room}, {<<"from">>, Login}]).
 
 get_message(_, #received_packet{type_attr="error"}) ->
@@ -101,8 +101,8 @@ get_message(_, _Request) ->
 
 send_message(Session, From, To, Message) ->
   [MucId|_Res] = string:tokens(binary_to_list(To), "/"),
-  BodyXmlEl    = exmpp_xml:append_cdata(exmpp_xml:element("jabber:client", body), Message),
-  MessageXmlEl = exmpp_xml:append_child(exmpp_xml:element("jabber:client", message), BodyXmlEl),
+  BodyXmlEl    = exmpp_xml:append_cdata(exmpp_xml:element(?NS_JABBER_CLIENT, body), Message),
+  MessageXmlEl = exmpp_xml:append_child(exmpp_xml:element(?NS_JABBER_CLIENT, message), BodyXmlEl),
   PktWithAttrs = exmpp_xml:set_attributes(MessageXmlEl, [{<<"from">>, From}, {<<"to">>, MucId}, {<<"type">>, groupchat}]),
   exmpp_session:send_packet(Session, PktWithAttrs).
 

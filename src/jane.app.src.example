@@ -16,6 +16,7 @@
   {env, [{user_login,"jane@example.com"},
          {user_password,"changeme"},
          {server_domain, "jabber.example.com"},
+         {server_port, "5222"},
          {muc_room, "test@conference.example.com/jane"},
          {commands, [
                       {"uptime","uptime"},
