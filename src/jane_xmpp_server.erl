@@ -27,7 +27,7 @@ start_link() ->
 
 send_message(Body) ->
   error_logger:info_msg("Sending message ~p~n", [Body]),
-  send_message(list_to_binary(?USER_LOGIN), list_to_binary(?MUC_ROOM), Body).
+  send_message(list_to_binary(?app_env(user_login)), list_to_binary(?app_env(muc_room)), Body).
 
 send_message(From, To, Reply) ->
   error_logger:info_msg("Sending message ~n  From: ~p~n  To: ~p~n  Reply: ~p~n", [From, To, Reply]),
@@ -38,12 +38,12 @@ send_message(From, To, Reply) ->
 %%%===================================================================
 
 init([]) ->
-  Session = connect(?USER_LOGIN, ?USER_PASSWORD, ?SERVER_DOMAIN),
-  exmpp_session:send_packet(Session, join_room(?USER_LOGIN,?MUC_ROOM)),
+  Session = connect(?app_env(user_login), ?app_env(user_password), ?app_env(server_domain)),
+  exmpp_session:send_packet(Session, join_room(?app_env(user_login), ?app_env(muc_room))),
   {ok, #state{session = Session}, 0}.
 
 handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
-  Message = get_message(?MUC_ROOM, Request),
+  Message = get_message(?app_env(muc_room), Request),
   jane_command_server:process_message(Message),
   {noreply, State};
 handle_info(_Request, State) ->
@@ -73,8 +73,8 @@ connect(Login, Password, Domain) ->
   [UserName, UserDomain] = string:tokens(Login,"@"),
   JID     = exmpp_jid:make(UserName, UserDomain, random),
   exmpp_session:auth_info(Session, JID, Password),
-  error_logger:info_msg("Connecting on port ~p~n", [list_to_integer(?SERVER_PORT)]),
-  exmpp_session:connect_TCP(Session, Domain, list_to_integer(?SERVER_PORT)),
+  error_logger:info_msg("Connecting on port ~p~n", [list_to_integer(?app_env(server_port))]),
+  exmpp_session:connect_TCP(Session, Domain, list_to_integer(?app_env(server_port))),
   error_logger:info_msg("Logging in~n"),
   exmpp_session:login(Session, "PLAIN"),
   Session.
