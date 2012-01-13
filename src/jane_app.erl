@@ -10,6 +10,7 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
+    error_logger:info_msg("Starting jane_app~n"),
     jane_sup:start_link().
 
 stop(_State) ->

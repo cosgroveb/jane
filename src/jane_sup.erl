@@ -16,6 +16,7 @@
 %% ===================================================================
 
 start_link() ->
+    error_logger:info_msg("Starting jane_sup~n"),
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 %% ===================================================================

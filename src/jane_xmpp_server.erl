@@ -22,12 +22,15 @@
 %%%===================================================================
 
 start_link() ->
+  error_logger:info_msg("Starting jane_xmpp_server"),
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 send_message(Body) ->
+  error_logger:info_msg("Sending message ~p~n", [Body]),
   send_message(list_to_binary(?USER_LOGIN), list_to_binary(?MUC_ROOM), Body).
 
 send_message(From, To, Reply) ->
+  error_logger:info_msg("Sending message ~n  From: ~p~n  To: ~p~n  Reply: ~p~n", [From, To, Reply]),
   gen_server:cast(jane_xmpp_server, {send_message, {From, To, Reply}}).
 
 %%%===================================================================
@@ -64,16 +67,20 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 
 connect(Login, Password, Domain) ->
+  error_logger:info_msg("Connecting to xmpp server ~p as ~p~n", [Domain, Login]),
   application:start(exmpp),
   Session = exmpp_session:start({1,0}),
   [UserName, UserDomain] = string:tokens(Login,"@"),
   JID     = exmpp_jid:make(UserName, UserDomain, random),
   exmpp_session:auth_info(Session, JID, Password),
+  error_logger:info_msg("Connecting on port ~p~n", [list_to_integer(?SERVER_PORT)]),
   exmpp_session:connect_TCP(Session, Domain, list_to_integer(?SERVER_PORT)),
+  error_logger:info_msg("Logging in~n"),
   exmpp_session:login(Session, "PLAIN"),
   Session.
 
 join_room(Login, Room) ->
+  error_logger:info_msg("Joining xmpp room ~p as ~p~n", [Room, Login]),
   Presence = exmpp_presence:presence(available, ""),
   Stanza = exmpp_xml:append_child(Presence, exmpp_xml:element(?NS_MUC, x)),
   exmpp_xml:set_attributes(Stanza,[{<<"to">>, Room}, {<<"from">>, Login}]).

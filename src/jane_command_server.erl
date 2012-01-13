@@ -15,6 +15,7 @@
 %%%===================================================================
 
 start_link() ->
+  error_logger:info_msg("Starting jane_command_server~n"),
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 process_message(Message) ->
@@ -33,8 +34,12 @@ handle_call(_Request, _From, State) ->
 handle_cast({process_message, {To, From, Body}}, State) ->
   Sender = lists:nth(2,string:tokens(binary_to_list(To), "/")),
   Reply = case command:call(Sender, binary_to_list(Body)) of
-    {error, _} -> "Sorry, I don't know what you mean.";
-    {ok, Output} -> Output
+    {error, _} ->
+      error_logger:info_msg("Command not found: ~p~n", [binary_to_list(Body)]),
+      "Sorry, I don't know what you mean.";
+    {ok, Output} ->
+      error_logger:info_msg("Command output: ~p~n", [Output]),
+      Output
   end,
   jane_xmpp_server:send_message(From, To, Reply),
   {noreply, State};
