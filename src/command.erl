@@ -39,6 +39,17 @@ find_and_run_command(Sender, Body, [{CommandName, CommandFun}|Commands]) ->
 
 commands() ->
   [
+
+    {<<"is it raining in">>, fun(_Sender, Body) ->
+      City = lists:last(string:tokens(Body, " ")),
+      ApiUrl = string:concat("http://isitraining.in/", City),
+
+      ApiResponse = ibrowse:send_req(ApiUrl, [], get, []),
+      {ok, _StatusCode, _Headers, ResBody} = ApiResponse,
+      [_|[WeatherConditions|_]] = re:split(ResBody, "</?h2>"),
+      re:replace(WeatherConditions, "</?.*?/?>", "", [global, {return,list}])
+    end},
+
     {[<<"hello">>, <<"hi">>], fun(Sender, _Body) ->
       string:concat("Hello ", Sender) end},
 
