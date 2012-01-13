@@ -31,8 +31,8 @@ init([]) ->
 handle_call(_Request, _From, State) ->
   {noreply, State}.
 
-handle_cast({process_message, {To, From, Body}}, State) ->
-  Sender = lists:nth(2,string:tokens(binary_to_list(To), "/")),
+handle_cast({process_message, {From, Body}}, State) ->
+  Sender = lists:nth(2,string:tokens(binary_to_list(From), "/")),
   Reply = case command:call(Sender, binary_to_list(Body)) of
     {error, _} ->
       error_logger:info_msg("Command not found: ~p~n", [binary_to_list(Body)]),

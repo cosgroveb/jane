@@ -15,7 +15,7 @@
 
 -define(SERVER, ?MODULE).
 
--record(state, {session}).
+-record(state, {session, silenced=false}).
 
 %%%===================================================================
 %%% API
@@ -88,19 +88,17 @@ join_room(Login, Room) ->
 get_message(_, #received_packet{type_attr="error"}) ->
   {error};
 get_message(Room, Request=#received_packet{raw_packet=Packet, type_attr="groupchat"}) ->
-
   SelfJID = exmpp_jid:parse(Room),
   {_,_,_,_,BotName} = SelfJID,
   Body = exmpp_message:get_body(Packet),
-  To   = exmpp_xml:get_attribute(Packet, <<"from">>, "unknown"),
-  From = exmpp_xml:get_attribute(Packet, <<"to">>, "unknown"),
+  From   = exmpp_xml:get_attribute(Packet, <<"from">>, "unknown"),
 
   ShouldHandleMessage = (is_old_message(Request) == false) and
                         (is_from_self(Request, SelfJID) == false) and
                         has_botname(Body, BotName),
 
   if
-    ShouldHandleMessage == true  -> {To, From, Body};
+    ShouldHandleMessage == true  -> {From, Body};
     ShouldHandleMessage == false -> {nomessage}
   end;
 get_message(_, _Request) ->
