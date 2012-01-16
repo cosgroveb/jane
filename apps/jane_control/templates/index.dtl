@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>
+      jane console
+    </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    </head>
+  <body>
+    <header>
+      <h1>
+        jane console
+      </h1>
+      <p>
+        manage jane
+      </p>
+    </header>
+    <p>Soon you will be able to manage jane from the web, starting/stopping her, making her join or leave rooms, and silencing jane for a time</p>
+  </body>
+</html>
+
+

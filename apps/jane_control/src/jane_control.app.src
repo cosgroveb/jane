@@ -1,0 +1,18 @@
+%%-*- mode: erlang -*-
+{application, jane_control,
+ [
+  {description, "jane_control"},
+  {vsn, "1"},
+  {modules, []},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  inets,
+                  crypto,
+                  mochiweb,
+                  webmachine
+                 ]},
+  {mod, { jane_control_app, []}},
+  {env, []}
+ ]}.

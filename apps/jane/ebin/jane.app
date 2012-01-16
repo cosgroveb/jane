@@ -1,0 +1,13 @@
+{application,jane,
+             [{description,"jane: just another erlang bot"},
+              {vsn,"0.1.0"},
+              {modules,[command,jane_app,jane_command_server,jane_sup,
+                        jane_xmpp_server]},
+              {registered,[jane_sup]},
+              {applications,[kernel,stdlib]},
+              {mod,{jane_app,[]}},
+              {env,[{user_login,"jane@localhost"},
+                    {user_password,"password"},
+                    {server_domain,"localhost"},
+                    {server_port,"5222"},
+                    {muc_room,"test@conference.localhost/jane"}]}]}.
