@@ -1,0 +1,28 @@
+{application, jane,
+ [
+  {description, "jane: just another erlang bot"},
+  {vsn, "0.1.0"},
+  {modules, [
+              jane_app,
+              jane_sup,
+              jane_server
+            ]},
+  {registered, [jane_sup]},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { jane_app, []}},
+  {env, [{user_login,"jane@localhost"},
+         {user_password,"password"},
+         {server_domain, "localhost"},
+         {server_port, "5222"},
+         {muc_room, "test@conference.localhost/jane"}
+        ]}
+  % {env, [{user_login,"jane@braintreepayments.com"},
+  %        {user_password,"WP1GHNrSW704uU0"},
+  %        {server_domain, "jabber.braintreepayments.com"},
+  %        {server_port, "5222"},
+  %        {muc_room, "dev@conference.braintreepayments.com/jane"}
+  %       ]}
+ ]}.
