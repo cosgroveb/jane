@@ -2,6 +2,7 @@
 -include_lib("eunit/include/eunit.hrl").
 
 join_room_test() ->
+  error_logger:tty(false),
   JoinStanza = jane_xmpp_server:join_room("test@localhost","test@conference.localhost"),
   ?assert(exmpp_presence:is_presence(JoinStanza)          == true),
   ?assert(exmpp_xml:has_attribute(JoinStanza, <<"to">>)   == true),

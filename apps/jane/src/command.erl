@@ -85,27 +85,12 @@ commands() ->
     end},
 
     {[<<"find card">>, <<"mingle">>, <<"card">>, <<"mingle card">>], fun(_Sender, Body) ->
-      [CardNum|_] = lists:reverse(string:tokens(Body, " ")),
-      case length(CardNum) == 5 of
-        false -> "Can't find card";
-        true ->
-          XmlUrl = string:join(["https://", ?app_env(mingle_url), "/api/v2/projects/", ?app_env(mingle_project), "/cards/", string:sub_string(CardNum, 2), ".xml"], ""),
-          Url = string:join(["https://", ?app_env(mingle_url), "/projects/", ?app_env(mingle_project), "/cards/", string:sub_string(CardNum, 2)], ""),
+      [Card|_] = lists:reverse(string:tokens(Body, " ")),
+      CardNum = string:sub_string(Card, 2),
+      Url = mingle_service:get_url(CardNum),
+      {Name, _Description} = mingle_service:fetch_card(CardNum),
 
-          Response = ibrowse:send_req(XmlUrl, [], get, [], [
-            {basic_auth, {?app_env(mingle_user), ?app_env(mingle_password)}}
-          ]),
-
-          {ok, _StatusCode, _Headers, ResBody} = Response,
-          try erlsom:simple_form(ResBody) of
-            Xml ->
-              {ok, {"card", [], Children}, "\n"} = Xml,
-              [{"name", [], [Name]}, {"description", [], [_Description]}|_Children] = Children,
-              string:join([Name, " (", Url, ")"], "")
-          catch
-            _ -> "Sorry that seems to be an invalid card."
-          end
-      end
+      string:join([Name, " (", Url, ")"], "")
     end}
 
   ].
