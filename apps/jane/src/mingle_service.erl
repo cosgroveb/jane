@@ -2,6 +2,10 @@
 -include("jane.hrl").
 -export([fetch_card/5, fetch_card/1, get_url/3, get_url/1]).
 
+%% ===================================================================
+%% API
+%% ===================================================================
+
 fetch_card(Card) ->
   fetch_card(
     ?app_env(mingle_url), ?app_env(mingle_project), Card,
@@ -24,6 +28,10 @@ get_url(Card) ->
 
 get_url(Domain, Project, Card) ->
   string:join(["https:/", Domain, "projects", Project, "cards", Card], "/").
+
+%% ===================================================================
+%% Private
+%% ===================================================================
 
 parse_xml_output(Xml) ->
   {ok, {"card", [], Children}, "\n"} = Xml,

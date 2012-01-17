@@ -78,14 +78,8 @@ commands() ->
       re:replace(DegreedConditions, "</?.*?/?>", "", [global, {return,list}])
     end},
 
-    {[<<"tweet">>], fun(_Sender, Body) ->
-      Url = lists:last(string:tokens(Body, " ")),
-      Tweet = web_request:get_json(Url),
-      binary_to_list(dict:fetch(<<"text">>, Tweet))
-    end},
-
     {[<<"find card">>, <<"mingle">>, <<"card">>, <<"mingle card">>], fun(_Sender, Body) ->
-      [Card|_] = lists:reverse(string:tokens(Body, " ")),
+      Card = lists:last(string:tokens(Body, " ")),
       CardNum = string:sub_string(Card, 2),
       Url = mingle_service:get_url(CardNum),
       {Name, _Description} = mingle_service:fetch_card(CardNum),
