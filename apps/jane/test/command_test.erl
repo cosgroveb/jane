@@ -25,13 +25,6 @@ current_song_test() ->
   ?assertEqual(Output, "Foo by Bar"),
   meck:unload(web_request).
 
-tweet_test() ->
-  meck:new(web_request),
-  meck:expect(web_request, get_json, fun(_) -> dict:from_list([{<<"text">>, <<"foo">>}]) end),
-  {ok, Output} = command:call("foo", "tweet https://api.twitter.com/1/statuses/show.json?id=112652479837110273"),
-  ?assertEqual(Output, "foo"),
-  meck:unload(web_request).
-
 is_it_raining_in_test() ->
   meck:new(web_request),
   meck:expect(web_request, get, fun(_) -> {ok, x, x, "<h1>No</h1><h2>Conditions for <strong>Chicago, Illinois, United States</strong><br/>on Mon, 16 Jan 2012 7:10 pm CST: <strong>Cloudy</strong> (7&deg;C, 43&deg;F)</h2>"} end),
