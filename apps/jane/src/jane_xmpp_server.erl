@@ -4,14 +4,11 @@
 -include_lib("exmpp/include/exmpp.hrl").
 -include_lib("exmpp/include/exmpp_client.hrl").
 -include_lib("jane.hrl").
--include_lib("eunit/include/eunit.hrl").
 
 -export([start_link/0, send_message/3, send_message/1]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
-
--ifdef(TEST). -include("../test/jane_xmpp_server_test.hrl"). -endif.
 
 -define(SERVER, ?MODULE).
 

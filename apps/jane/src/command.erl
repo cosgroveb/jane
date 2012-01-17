@@ -1,8 +1,6 @@
 -module(command).
 -export([call/2]).
 -include_lib("jane.hrl").
--include_lib("eunit/include/eunit.hrl").
--ifdef(TEST). -include("../test/command_test.hrl"). -endif.
 
 %%%===================================================================
 %%% API
@@ -28,7 +26,9 @@ find_and_run_command(Sender, Body, [{[CommandName|OtherCommandNames], CommandFun
     Output -> Output
   end;
 find_and_run_command(Sender, Body, [{CommandName, CommandFun}|Commands]) ->
-  case string:str(Body, binary_to_list(CommandName)) of
+  WhiteSpaceCommand = string:join([" ", binary_to_list(CommandName), " "], ""),
+  WhiteSpaceBody = string:join([" ", Body, " "], ""),
+  case string:str(WhiteSpaceBody, WhiteSpaceCommand) of
     0 -> find_and_run_command(Sender, Body, Commands);
     _ -> CommandFun(Sender, Body)
   end.
@@ -39,17 +39,6 @@ find_and_run_command(Sender, Body, [{CommandName, CommandFun}|Commands]) ->
 
 commands() ->
   [
-
-    {<<"is it raining in">>, fun(_Sender, Body) ->
-      City = lists:last(string:tokens(Body, " ")),
-      ApiUrl = string:concat("http://isitraining.in/", City),
-
-      ApiResponse = ibrowse:send_req(ApiUrl, [], get, []),
-      {ok, _StatusCode, _Headers, ResBody} = ApiResponse,
-      [_|[WeatherConditions|_]] = re:split(ResBody, "</?h2>"),
-      DegreedConditions = re:replace(WeatherConditions, "&deg;", "°", [global, {return,list}]),
-      re:replace(DegreedConditions, "</?.*?/?>", "", [global, {return,list}])
-    end},
 
     {[<<"hello">>, <<"hi">>], fun(Sender, _Body) ->
       string:concat("Hello ", Sender) end},
@@ -73,14 +62,26 @@ commands() ->
       os:cmd("curl -s -k \"https://www.braintreegateway.com/revision\" | awk '{ print $1 }'") end},
 
     {[<<"what is playing">>, <<"whats playing">>, <<"what song is this">>], fun(_Sender, _Body) ->
-      CurrentSong = jsonerl:decode(
-        os:cmd("curl -s -H \"Accept: application/json\" http://jukebox2.local/playlist/current-track")),
+      Song = web_request:get_json("http://jukebox2.local/playlist/current-track"),
+      Title = dict:fetch(<<"title">>, Song),
+      Artist = dict:fetch(<<"artist">>, Song),
+      string:join([binary_to_list(Title), " by ", binary_to_list(Artist)], "")
+    end},
 
-      {_, _, _,
-        {<<"artist">>, Artist}, {<<"owner">>, _Owner}, {<<"title">>, Title}, {<<"album">>, _Album},
-        _, _, _, _} = CurrentSong,
+    {<<"is it raining in">>, fun(_Sender, Body) ->
+      City = lists:last(string:tokens(Body, " ")),
+      ApiUrl = string:concat("http://isitraining.in/", City),
+      {ok, _StatusCode, _Headers, ResBody} = web_request:get(ApiUrl),
 
-      string:concat(binary_to_list(Title), string:concat(" by ", binary_to_list(Artist)))
+      [_|[WeatherConditions|_]] = re:split(ResBody, "</?h2>"),
+      DegreedConditions = re:replace(WeatherConditions, "&deg;", "°", [global, {return,list}]),
+      re:replace(DegreedConditions, "</?.*?/?>", "", [global, {return,list}])
+    end},
+
+    {[<<"tweet">>], fun(_Sender, Body) ->
+      Url = lists:last(string:tokens(Body, " ")),
+      Tweet = web_request:get_json(Url),
+      binary_to_list(dict:fetch(<<"text">>, Tweet))
     end},
 
     {[<<"find card">>, <<"mingle">>, <<"card">>, <<"mingle card">>], fun(_Sender, Body) ->

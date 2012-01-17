@@ -2,7 +2,7 @@
              [{description,"jane_control"},
               {vsn,"1"},
               {modules,[index_dtl,jane_control,jane_control_app,
-                        jane_control_resource,jane_control_sup,mywebdemo]},
+                        jane_control_resource,jane_control_sup]},
               {registered,[]},
               {applications,[kernel,stdlib,inets,crypto,mochiweb,webmachine]},
               {mod,{jane_control_app,[]}},

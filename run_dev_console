@@ -1,2 +1,2 @@
-echo "Running Jane Development Console\n==================\nYour code will be automatically re-compiled and re-loaded as you develop without interrupting jane.\n\n" 
-erl -pa apps/*/ebin -pa deps/*/ebin -s jane_app -s sync go
+echo "Running Jane Development Console\n==================\nYour code will be automatically re-compiled and re-loaded as you develop without interrupting jane.\n\n"
+erl -pa apps/*/ebin -pa deps/*/ebin

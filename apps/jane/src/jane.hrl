@@ -8,3 +8,7 @@
   Record#received_packet.packet_type == 'message' andalso
   Record#received_packet.type_attr == "groupchat"
 )).
+
+-ifdef(TEST).
+-compile([export_all]).
+-endif.

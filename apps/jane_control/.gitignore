@@ -1,0 +1,12 @@
+*.beam
+*.old
+*bak
+*.dump
+.erlang
+.eunit
+bot-test/
+rel/jane/*
+*.bt
+src/jane.app.src
+ebin/jane.app
+deps
