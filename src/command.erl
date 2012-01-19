@@ -78,13 +78,22 @@ commands() ->
       re:replace(DegreedConditions, "</?.*?/?>", "", [global, {return,list}])
     end},
 
-    {[<<"find card">>, <<"mingle">>, <<"card">>, <<"mingle card">>], fun(_Sender, Body) ->
+    {[<<"find card">>, <<"mingle card">>], fun(_Sender, Body) ->
       Card = lists:last(string:tokens(Body, " ")),
       CardNum = string:sub_string(Card, 2),
       Url = mingle_service:get_url(CardNum),
       {Name, _Description} = mingle_service:fetch_card(CardNum),
 
       string:join([Name, " (", Url, ")"], "")
+    end},
+
+    {<<"full card">>, fun(_Sender, Body) ->
+      Card = lists:last(string:tokens(Body, " ")),
+      CardNum = string:sub_string(Card, 2),
+      Url = mingle_service:get_url(CardNum),
+      {Name, Description} = mingle_service:fetch_card(CardNum),
+
+      string:join([Name, " (", Url, ")\n\n", Description], "")
     end}
 
   ].
