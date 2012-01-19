@@ -5,7 +5,7 @@
 -include_lib("exmpp/include/exmpp_client.hrl").
 -include_lib("jane.hrl").
 
--export([start_link/0, send_message/3, send_message/1]).
+-export([start_link/0, send_message/3, send_message/1, silence/0, unsilence/0]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
@@ -26,9 +26,16 @@ send_message(Body) ->
   error_logger:info_msg("Sending message ~p~n", [Body]),
   send_message(list_to_binary(?app_env(user_login)), list_to_binary(?app_env(muc_room)), Body).
 
-send_message(From, To, Reply) ->
+send_message(From, To, Reply) when is_list(Reply) ->
   error_logger:info_msg("Sending message ~n  From: ~p~n  To: ~p~n  Reply: ~p~n", [From, To, Reply]),
   gen_server:cast(jane_xmpp_server, {send_message, {From, To, Reply}}).
+
+silence() ->
+  send_message("Ok I won't talk until you tell me to start"),
+  gen_server:cast(jane_xmpp_server, silence).
+
+unsilence() ->
+  gen_server:cast(jane_xmpp_server, unsilence).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -37,7 +44,7 @@ send_message(From, To, Reply) ->
 init([]) ->
   Session = connect(?app_env(user_login), ?app_env(user_password), ?app_env(server_domain)),
   exmpp_session:send_packet(Session, join_room(?app_env(user_login), ?app_env(muc_room))),
-  {ok, #state{session = Session}, 0}.
+  {ok, #state{session = Session, silenced = false}, 0}.
 
 handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
   Message = get_message(?app_env(muc_room), Request),
@@ -49,9 +56,15 @@ handle_info(_Request, State) ->
 handle_call(_Request, _From, State) ->
   {noreply, State}.
 
-handle_cast({send_message, {From, To, Reply}}, State=#state{session=Session}) ->
+handle_cast({send_message, {From, To, Reply}}, State=#state{session=Session, silenced=false}) ->
   send_message(Session, From, To, Reply),
-  {noreply, State}.
+  {noreply, State};
+handle_cast({send_message, _}, State=#state{silenced=true}) ->
+  {noreply, State};
+handle_cast(silence, State) ->
+  {noreply, State#state{silenced=true}};
+handle_cast(unsilence, State) ->
+  {noreply, State#state{silenced=false}}.
 
 terminate(_Reason, _State) ->
   ok.

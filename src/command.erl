@@ -33,12 +33,33 @@ find_and_run_command(Sender, Body, [{CommandName, CommandFun}|Commands]) ->
     _ -> CommandFun(Sender, Body)
   end.
 
+get_command_list([]) ->
+  "";
+get_command_list([{MultiCommand, _}|Commands]) when is_list(MultiCommand) ->
+  MultiCommandStrings = lists:map(fun(C) -> binary_to_list(C) end, MultiCommand),
+  [string:join(MultiCommandStrings, ", ")|get_command_list(Commands)];
+get_command_list([{Command, _}|Commands]) ->
+  [binary_to_list(Command)|get_command_list(Commands)].
+
+
 %%%===================================================================
 %%% Commands
 %%%===================================================================
 
 commands() ->
   [
+
+    {<<"help">>, fun(_Sender, _Body) ->
+      Commands = get_command_list(commands()),
+      string:join(Commands, "\n\n") end},
+
+    {<<"stop">>, fun(_Sender, _Body) ->
+      jane_xmpp_server:silence(),
+      "Ok" end},
+
+    {<<"start">>, fun(_Sender, _Body) ->
+      jane_xmpp_server:unsilence(),
+      "Ok" end},
 
     {[<<"hello">>, <<"hi">>], fun(Sender, _Body) ->
       string:concat("Hello ", Sender) end},

@@ -33,3 +33,10 @@ is_it_raining_in_test() ->
   ?assertEqual(Output, "Conditions for Chicago, Illinois, United Stateson Mon, 16 Jan 2012 7:10 pm CST: Cloudy (7°C, 43°F)"),
 
   meck:unload(web_request).
+
+get_command_list_test() ->
+  Commands = [ {<<"command">>, command_fun}, {[<<"other command">>, <<"other">>], command_fun} ],
+  ExpectedOutput = ["command", "other command, other"],
+  Output = command:get_command_list(Commands),
+
+  ?assertEqual(ExpectedOutput, Output).
