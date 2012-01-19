@@ -1,9 +1,0 @@
-{application,mywebdemo,
-             [{description,"mywebdemo"},
-              {vsn,"1"},
-              {modules,[mywebdemo,mywebdemo_app,mywebdemo_resource,
-                        mywebdemo_sup]},
-              {registered,[]},
-              {applications,[kernel,stdlib,inets,crypto,mochiweb,webmachine]},
-              {mod,{mywebdemo_app,[]}},
-              {env,[]}]}.
