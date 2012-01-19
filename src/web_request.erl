@@ -13,7 +13,7 @@ get(Url, Body) ->
   ibrowse:send_req(Url, [], get, Body).
 
 get_json(Url) ->
-  {ok, _StatusCode, _Headers, Body} = jane_http:get(Url),
+  {ok, _StatusCode, _Headers, Body} = web_request:get(Url),
   json_to_dict(Body).
 
 %% ===================================================================

@@ -99,6 +99,19 @@ commands() ->
       re:replace(DegreedConditions, "</?.*?/?>", "", [global, {return,list}])
     end},
 
+    {<<"tweet">>, fun(_Sender, Body) ->
+      Url = lists:last(string:tokens(Body, " ")),
+      TweetID = lists:last(string:tokens(Url, "/")),
+      TweetUrl = string:concat("https://api.twitter.com/1/statuses/show.json?id=", TweetID),
+
+      Tweet = web_request:get_json(TweetUrl),
+      Text = binary_to_list(dict:fetch(<<"text">>, Tweet)),
+      User = binary_to_list(dict:fetch(<<"screen_name">>, dict:fetch(<<"user">>, Tweet))),
+
+      string:join(["\"", Text, "\" - @", User], "")
+    end},
+
+
     {[<<"find card">>, <<"mingle card">>], fun(_Sender, Body) ->
       Card = lists:last(string:tokens(Body, " ")),
       CardNum = string:sub_string(Card, 2),
