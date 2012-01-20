@@ -1,5 +1,5 @@
 ERL ?= erl
-APP := jane_web
+APP := jane
 
 .PHONY: deps test
 
@@ -16,7 +16,7 @@ distclean: clean
 	@./rebar delete-deps
 
 test:
-	@./rebar eunit app=jane,jane_web
+	@./rebar eunit app=jane
 
 docs:
 	@erl -noshell -run edoc_run application '$(APP)' '"."' '[]'
