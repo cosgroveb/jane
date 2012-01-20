@@ -57,7 +57,8 @@ handle_call(_Request, _From, State) ->
   {noreply, State}.
 
 handle_cast({send_message, {From, To, Reply}}, State=#state{session=Session, silenced=false}) ->
-  send_message(Session, From, To, Reply),
+  Message = prepare_message(From, To, Reply),
+  exmpp_session:send_packet(Session, Message),
   {noreply, State};
 handle_cast({send_message, _}, State=#state{silenced=true}) ->
   {noreply, State};
@@ -93,7 +94,8 @@ join_room(Login, Room) ->
   error_logger:info_msg("Joining xmpp room ~p as ~p~n", [Room, Login]),
   Presence = exmpp_presence:presence(available, ""),
   Stanza = exmpp_xml:append_child(Presence, exmpp_xml:element(?NS_MUC, x)),
-  exmpp_xml:set_attributes(Stanza,[{<<"to">>, Room}, {<<"from">>, Login}]).
+  JoinRoomXml = exmpp_xml:set_attributes(Stanza,[{<<"to">>, Room}, {<<"from">>, Login}]),
+  JoinRoomXml.
 
 get_message(_, #received_packet{type_attr="error"}) ->
   {error};
@@ -106,7 +108,6 @@ get_message(Room, Request=#received_packet{raw_packet=Packet, type_attr="groupch
   ShouldHandleMessage = (is_old_message(Request) == false) and
                         (is_from_self(Request, SelfJID) == false) and
                         has_botname(Body, BotName),
-
   if
     ShouldHandleMessage == true  -> {From, Body};
     ShouldHandleMessage == false -> {nomessage}
@@ -114,12 +115,12 @@ get_message(Room, Request=#received_packet{raw_packet=Packet, type_attr="groupch
 get_message(_, _Request) ->
   {error}.
 
-send_message(Session, From, To, Message) ->
+prepare_message(From, To, Message) ->
   [MucId|_Res] = string:tokens(binary_to_list(To), "/"),
   BodyXmlEl    = exmpp_xml:append_cdata(exmpp_xml:element(?NS_JABBER_CLIENT, body), Message),
   MessageXmlEl = exmpp_xml:append_child(exmpp_xml:element(?NS_JABBER_CLIENT, message), BodyXmlEl),
-  PktWithAttrs = exmpp_xml:set_attributes(MessageXmlEl, [{<<"from">>, From}, {<<"to">>, MucId}, {<<"type">>, groupchat}]),
-  exmpp_session:send_packet(Session, PktWithAttrs).
+  MessageXml   = exmpp_xml:set_attributes(MessageXmlEl, [{<<"from">>, From}, {<<"to">>, MucId}, {<<"type">>, groupchat}]),
+  MessageXml.
 
 is_old_message(Request) ->
   exmpp_xml:has_element(Request#received_packet.raw_packet, x).
