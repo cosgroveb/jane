@@ -1,0 +1,4 @@
+{application,jane_web}.
+{packages,[]}.
+{modules,[command,jane,jane_app,jane_command_server,jane_sup,jane_xmpp_server,
+          mingle_service,web_request]}.
