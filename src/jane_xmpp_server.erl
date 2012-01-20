@@ -35,7 +35,6 @@ silence() ->
   gen_server:cast(jane_xmpp_server, silence).
 
 unsilence() ->
-  send_message("Ok"),
   gen_server:cast(jane_xmpp_server, unsilence).
 
 %%%===================================================================

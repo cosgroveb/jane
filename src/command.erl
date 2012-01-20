@@ -23,7 +23,7 @@ call_action(_, _, _) ->
   error.
 
 call_function(Mod, Fun) ->
-  fun(_,_) -> apply(Mod, Fun, []) end.
+  fun(_,_) -> apply(Mod, Fun, []), "Ok" end.
 
 eval([], _Sender, _Body) ->
   error;
