@@ -35,6 +35,7 @@ silence() ->
   gen_server:cast(jane_xmpp_server, silence).
 
 unsilence() ->
+  send_message("Ok"),
   gen_server:cast(jane_xmpp_server, unsilence).
 
 %%%===================================================================
@@ -60,12 +61,12 @@ handle_cast({send_message, {From, To, Reply}}, State=#state{session=Session, sil
   Message = prepare_message(From, To, Reply),
   exmpp_session:send_packet(Session, Message),
   {noreply, State};
-handle_cast({send_message, _}, State=#state{silenced=true}) ->
-  {noreply, State};
 handle_cast(silence, State) ->
   {noreply, State#state{silenced=true}};
 handle_cast(unsilence, State) ->
-  {noreply, State#state{silenced=false}}.
+  {noreply, State#state{silenced=false}};
+handle_cast(_, State) ->
+  {noreply, State}.
 
 terminate(_Reason, _State) ->
   ok.
