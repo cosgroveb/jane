@@ -13,7 +13,7 @@ get(Url, Body) ->
   ibrowse:send_req(Url, [], get, Body).
 
 get_json(Url) ->
-  {ok, _StatusCode, _Headers, Body} = web_request:get(Url),
+  {ok, _StatusCode, _Headers, Body} = ibrowse:send_req(Url, [{"Accept", "application/json"}], get),
   json_to_dict(Body).
 
 %% ===================================================================

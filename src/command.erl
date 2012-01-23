@@ -142,12 +142,62 @@ commands() -> [
   },
 
   #command {
-    matches = "whats playing",
+    matches = "jukebox",
     action = fun(_Sender, _Body) ->
       Song = web_request:get_json("http://jukebox2.local/playlist/current-track"),
       Title = dict:fetch(<<"title">>, Song),
       Artist = dict:fetch(<<"artist">>, Song),
       string:join([binary_to_list(Title), " by ", binary_to_list(Artist)], "")
+    end,
+    subcommands = [
+      #command {
+        matches = "(whats playing|what is playing|playing|current)",
+        action = fun(_Sender, _Body) ->
+          Song = web_request:get_json("http://jukebox2.local/playlist/current-track"),
+          Title = dict:fetch(<<"title">>, Song),
+          Artist = dict:fetch(<<"artist">>, Song),
+          string:join([binary_to_list(Title), " by ", binary_to_list(Artist)], "")
+        end
+      },
+
+      #command {
+        matches = "(whos song is this|song owner)",
+        action = fun(_Sender, _Body) ->
+          Song = web_request:get_json("http://jukebox2.local/playlist/current-track"),
+          dict:fetch(<<"owner">>, Song)
+        end
+      },
+
+      #command {
+        matches = "(play|start)",
+        action = fun(_Sender, _Body) ->
+          web_request:get("http://jukebox2.local/player/play"),
+          "I started jukebox"
+        end
+      },
+
+      #command {
+        matches = "pause",
+        action = fun(_Sender, _Body) ->
+          web_request:get("http://jukebox2.local/player/pause"),
+          "I paused jukebox"
+        end
+      }
+    ]
+  },
+
+  #command {
+    matches = "(tweet|twitter)",
+    action = fun(_Sender, Body) ->
+      Url = lists:last(string:tokens(Body, " ")),
+      TweetID = lists:last(string:tokens(Url, "/")),
+      TweetUrl = string:concat("https://api.twitter.com/1/statuses/show.json?id=", TweetID),
+
+      Tweet = web_request:get_json(TweetUrl),
+      Text = binary_to_list(dict:fetch(<<"text">>, Tweet)),
+      User = binary_to_list(dict:fetch(<<"screen_name">>, dict:fetch(<<"user">>, Tweet))),
+
+      string:join(["\"", Text, "\" - @", User], "")
     end
   },
 
