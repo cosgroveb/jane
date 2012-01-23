@@ -1,1 +1,0 @@
-erl -config test -pa ebin deps/*/ebin -s jane
