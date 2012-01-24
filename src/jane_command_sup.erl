@@ -13,6 +13,7 @@
 %% ===================================================================
 
 start_link() ->
+  error_logger:info_msg("Starting jane_command_sup~n"),
   supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 start_child(Message) ->
