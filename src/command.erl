@@ -1,46 +1,14 @@
 -module(command).
--export([call/2]).
+-export([commands/0]).
 -include_lib("jane.hrl").
 -include_lib("command.hrl").
-
-%%%===================================================================
-%%% API
-%%%===================================================================
-
-call(Sender, Body) ->
-  case eval(commands(), Sender, Body) of
-    error -> {error, no_command};
-    Output -> {ok, Output}
-  end.
 
 %%%===================================================================
 %%% Private
 %%%===================================================================
 
-call_action(Action, Sender, Body) when is_function(Action) ->
-  Action(Sender, Body);
-call_action(_, _, _) ->
-  error.
-
 call_function(Mod, Fun) ->
   fun(_,_) -> apply(Mod, Fun, []), "Ok" end.
-
-eval([], _Sender, _Body) ->
-  error;
-eval([Command|Commands], Sender, Body) ->
-  #command{matches=Matches, action=Action, subcommands=SubCommands} = Command,
-  PaddedBody = string:join([" ", Body, " "], ""),
-  PaddedMatches = string:join(["\s", Matches, "\s"], ""),
-
-  case re:run(PaddedBody, PaddedMatches) of
-    nomatch ->
-      eval(Commands, Sender, Body);
-    _ ->
-      case eval(SubCommands, Sender, Body) of
-        error -> call_action(Action, Sender, Body);
-        Output -> Output
-      end
-  end.
 
 help(Commands) ->
   help("", Commands).
