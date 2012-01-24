@@ -1,3 +1,5 @@
+-record(message, {room, to, from, body, raw_message}).
+
 % Macros to get settings
 -define(app_env(Key), (
   element(2, application:get_env(jane, Key))

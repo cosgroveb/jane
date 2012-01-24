@@ -12,8 +12,7 @@
 %% ===================================================================
 
 start_link(Message) ->
-  {_,{_,Body}} = Message,
-  error_logger:info_msg("Starting jane_command_worker to handle command: ~p~n",[Body]),
+  error_logger:info_msg("Starting jane_command_worker to handle command: ~p~n",[Message]),
   proc_lib:start_link(?MODULE, init, [Message]).
 
 process_message(Message) ->
@@ -28,7 +27,7 @@ init(Message) ->
 %% Private
 %% ===================================================================
 
-handle_message({process_message, {From, Body}}) ->
+handle_message({process_message, #message{room=Room, to=To, from=From, body=Body}}) ->
   Sender = lists:nth(2,string:tokens(binary_to_list(From), "/")),
   Reply = case eval_message(command:commands(), Sender, binary_to_list(Body)) of
     error ->
@@ -38,7 +37,7 @@ handle_message({process_message, {From, Body}}) ->
       error_logger:info_msg("Command output: ~p~n", [Output]),
       Output
   end,
-  jane_xmpp_server:send_message(Reply);
+  jane_xmpp_server:send_message(#message{room=Room, to=From, from=To, body=Reply});
 handle_message(_) ->
   {ok, nothing}.
 
