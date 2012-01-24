@@ -2,9 +2,7 @@
 
 -include_lib("jane.hrl").
 
--export([start_link/1, process_message/1]).
-
--export([init/1]).
+-export([start_link/1, process_message/1, init/1]).
 
 -define(SERVER, ?MODULE).
 
@@ -13,17 +11,13 @@
 %% ===================================================================
 
 start_link(Message) ->
-  error_logger:info_msg("Starting jane_command_worker~n"),
-  Result = proc_lib:start_link(?MODULE, init, [Message]),
-  Result.
+  {_,{_,Body}} = Message,
+  error_logger:info_msg("Starting jane_command_worker to handle command: ~p~n",[Body]),
+  proc_lib:start_link(?MODULE, init, [Message]).
 
 process_message(Message) ->
   jane_command_sup:start_child({process_message,Message}),
   {ok, nothing, 0}.
-
-%% ===================================================================
-%% Supervisor callbacks
-%% ===================================================================
 
 init(Message) ->
   proc_lib:init_ack({ok, self()}),
@@ -45,4 +39,4 @@ handle_message({process_message, {From, Body}}) ->
   end,
   jane_xmpp_server:send_message(Reply);
 handle_message(_) ->
-  {ok, nothing, 0}.
+  {ok, nothing}.

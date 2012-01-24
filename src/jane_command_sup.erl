@@ -7,7 +7,6 @@
 -export([init/1]).
 
 -define(SERVER, ?MODULE).
--define(CHILD, {jane_command_worker, {jane_command_worker, start_link, []}, transient, brutal_kill, worker, [jane_command_worker]}).
 
 %% ===================================================================
 %% API
@@ -25,7 +24,9 @@ start_child(Message) ->
 %% ===================================================================
 
 init([]) ->
-  Children = [?CHILD],
+  Children = [{jane_command_worker,{jane_command_worker,start_link,[]},
+                                    transient,brutal_kill,worker,
+                                    [jane_command_worker]}],
   RestartStrategy = {simple_one_for_one, 10, 30000},
   {ok, {RestartStrategy, Children}}.
 
