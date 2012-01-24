@@ -48,7 +48,7 @@ init([]) ->
 
 handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
   Message = get_message(?app_env(muc_room), Request),
-  jane_command_server:process_message(Message),
+  jane_command_worker:process_message(Message),
   {noreply, State};
 handle_info(_Request, State) ->
   {noreply, State}.
