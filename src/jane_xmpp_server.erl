@@ -136,6 +136,8 @@ is_old_message(#message{raw_message=RawMessage}) ->
 is_from_self(#message{room=Room, raw_message=Request}) ->
   exmpp_jid:parse(Room) == exmpp_jid:make(Request#received_packet.from).
 
-has_botname(#message{body=Body, to=To}) ->
+has_botname(#message{body=Body, to=To}) when is_binary(Body) ->
   [BotName|_] = string:tokens(To, "@"),
-  string:rstr(string:to_lower(binary_to_list(Body)),string:to_lower(BotName)) > 0.
+  string:rstr(string:to_lower(binary_to_list(Body)),string:to_lower(BotName)) > 0;
+has_botname(_) ->
+  false.
