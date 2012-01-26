@@ -17,7 +17,14 @@ help(_Prefix, []) ->
   "";
 help(Prefix, [#command{matches=Matches, description=Description, subcommands=SubCommands}|Commands]) ->
   SubCommandOutput = help("    \\_ ", SubCommands),
-  string:concat(string:join([Prefix, Matches, ": ", Description, "\n", SubCommandOutput], ""), help(Prefix, Commands)).
+  Output = if
+    Prefix == "" ->
+      string:join([Prefix, Matches, ": ", Description, "\n", SubCommandOutput, "\n"], "");
+    true ->
+      string:join([Prefix, Matches, ": ", Description, "\n", SubCommandOutput], "")
+  end,
+
+  string:concat(Output, help(Prefix, Commands)).
 
 shell_exec(ShellCommand) ->
   fun(_, _) -> os:cmd(ShellCommand) end.
@@ -54,6 +61,51 @@ commands() -> [
     action = fun(_Sender, _Body) ->
       help(commands())
     end
+  },
+
+  #command {
+    matches = "(ci|jenkins)",
+    description = "Info about Jenkins",
+    action = fun(_Sender, _Body) ->
+      case jenkins_service:failing_builds() of
+        [] -> "All builds are passing! Yay!";
+        BuildList ->
+          FailingBuilds = string:join(BuildList, ", "),
+          string:concat("Failing builds: ", FailingBuilds)
+      end
+    end,
+
+    subcommands = [
+      #command {
+        matches = "(failing|failing builds)",
+        description = "List failing builds",
+        action = fun(_Sender, _Body) ->
+          case jenkins_service:failing_builds() of
+            [] -> "All builds are passing! Yay!";
+            BuildList ->
+              FailingBuilds = string:join(BuildList, ", "),
+              string:concat("Failing builds: ", FailingBuilds)
+          end
+        end
+      },
+
+      #command {
+        matches = "(build|job)",
+        description = "Get info about specific build",
+        action = fun(_Sender, Body) ->
+          Build = lists:last(string:tokens(Body, " ")),
+          jenkins_service:build_info(Build)
+        end
+      },
+
+      #command {
+        matches = "(box|status|busy)",
+        description = "Info about the build box",
+        action = fun(_Sender, _Body) ->
+          jenkins_service:box_status()
+        end
+      }
+    ]
   },
 
   #command {
