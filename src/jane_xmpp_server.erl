@@ -47,7 +47,7 @@ init([]) ->
 
 handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
   Message = parse_xmpp_message(Request),
-  case should_handle_message(Message) of
+  case should_handle_message(Request, Message) of
     true  -> jane_command_worker:process_message(Message);
     false -> nomessage
   end,
@@ -103,10 +103,10 @@ build_join_stanza(Login, Room) ->
   Stanza = exmpp_xml:append_child(Presence, exmpp_xml:element(?NS_MUC, x)),
   exmpp_xml:set_attributes(Stanza,[{<<"to">>, Room}, {<<"from">>, Login}]).
 
-should_handle_message(Message) ->
-  (is_old_message(Message) == false) and (is_from_self(Message) == false) and has_botname(Message).
+should_handle_message(Request, Message) ->
+  (is_old_message(Request) == false) and (is_from_self(Message#message.room, Request) == false) and has_botname(Message).
 
-parse_xmpp_message(Request=#received_packet{raw_packet=Packet, type_attr="groupchat"}) ->
+parse_xmpp_message(#received_packet{raw_packet=Packet, type_attr="groupchat"}) ->
   Body = exmpp_message:get_body(Packet),
   From = exmpp_xml:get_attribute(Packet, <<"from">>, "unknown"),
   Bot = ?app_env(user_login),
@@ -117,8 +117,7 @@ parse_xmpp_message(Request=#received_packet{raw_packet=Packet, type_attr="groupc
     room = string:join([RoomUrl, RoomUser], "/"),
     to = Bot,
     from = From,
-    body = Body,
-    raw_message = Request
+    body = Body
   };
 parse_xmpp_message(_Request) ->
   {error}.
@@ -130,10 +129,10 @@ prepare_message(#message{from=From, to=To, body=Body}) ->
   MessageXml   = exmpp_xml:set_attributes(MessageXmlEl, [{<<"from">>, From}, {<<"to">>, MucId}, {<<"type">>, groupchat}]),
   MessageXml.
 
-is_old_message(#message{raw_message=RawMessage}) ->
+is_old_message(RawMessage) ->
   exmpp_xml:has_element(RawMessage#received_packet.raw_packet, x).
 
-is_from_self(#message{room=Room, raw_message=Request}) ->
+is_from_self(Room, Request) ->
   exmpp_jid:parse(Room) == exmpp_jid:make(Request#received_packet.from).
 
 has_botname(#message{body=Body, to=To}) when is_binary(Body) ->

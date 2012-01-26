@@ -32,7 +32,13 @@ handle_message({process_message, #message{room=Room, to=To, from=From, body=Body
   Reply = case eval_message(command:commands(), Sender, binary_to_list(Body)) of
     error ->
       error_logger:info_msg("Command not found: ~p~n", [binary_to_list(Body)]),
-      "Sorry, I don't know what you mean.";
+      NotFoundResponses = [
+        "Sorry, I don't know what you mean",
+        "I have no idea what you're talking about",
+        "Hmm? Maybe ask for help"
+      ],
+      random:seed(erlang:now()),
+      lists:nth(random:uniform(length(NotFoundResponses)), NotFoundResponses);
     Output ->
       error_logger:info_msg("Command output: ~p~n", [Output]),
       Output
