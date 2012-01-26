@@ -1,6 +1,6 @@
 -module(web_request).
 -include_lib("jane.hrl").
--export([get/1, get/2, get_json/1]).
+-export([get/1, get/2, get_json/1, get_json/2, tuple_to_dict/1, json_to_dict/1]).
 
 %%%===================================================================
 %%% API
@@ -16,6 +16,10 @@ get_json(Url) ->
   {ok, _StatusCode, _Headers, Body} = ibrowse:send_req(Url, [{"Accept", "application/json"}], get),
   json_to_dict(Body).
 
+get_json(Url, Options) ->
+  {ok, _StatusCode, _Headers, Body} = ibrowse:send_req(Url, [{"Accept", "application/json"}], get, [], Options),
+  json_to_dict(Body).
+
 %% ===================================================================
 %% Private
 %% ===================================================================
@@ -26,11 +30,8 @@ json_to_dict(Json) ->
 
 tuple_to_dict(Tuple) when is_tuple(Tuple) ->
   Dict = dict:from_list(tuple_to_list(Tuple)),
-  DeepDictify = fun(_K,V) ->
-    case is_tuple(V) of
-      true -> tuple_to_dict(V);
-      _ -> V
-    end
-  end,
-
-  dict:map(DeepDictify, Dict).
+  dict:map(fun(_,V) -> tuple_to_dict(V) end, Dict);
+tuple_to_dict([Head|List]) when is_list(List) ->
+  [tuple_to_dict(Head)|tuple_to_dict(List)];
+tuple_to_dict(Value) ->
+  Value.

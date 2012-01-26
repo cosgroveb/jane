@@ -17,3 +17,13 @@ tuple_to_dict_test() ->
 
   NestedDict = dict:fetch(nested, Dict),
   boo = dict:fetch(baz, NestedDict).
+
+tuple_to_dict_list_of_tupples_test() ->
+  Stuct = {{list, [{{foo, bar}}, {{foo, baz}}]}},
+  Dict = web_request:tuple_to_dict(Stuct),
+  [D1, D2|_] = dict:fetch(list, Dict),
+  D1Foo = dict:fetch(foo, D1),
+  D2Foo = dict:fetch(foo, D2),
+
+  ?assertEqual(bar, D1Foo),
+  ?assertEqual(baz, D2Foo).
