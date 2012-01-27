@@ -36,6 +36,22 @@ shell_exec(ShellCommand) ->
 commands() -> [
 
   #command {
+    matches = "(twitter.com)",
+    pad_match = false,
+    action = fun(_Sender, Body) ->
+      Url = lists:last(string:tokens(Body, " ")),
+      TweetID = lists:last(string:tokens(Url, "/")),
+      TweetUrl = string:concat("https://api.twitter.com/1/statuses/show.json?id=", TweetID),
+
+      Tweet = web_request:get_json(TweetUrl),
+      Text = binary_to_list(dict:fetch(<<"text">>, Tweet)),
+      User = binary_to_list(dict:fetch(<<"screen_name">>, dict:fetch(<<"user">>, Tweet))),
+
+      string:join(["\"", Text, "\" - @", User], "")
+    end
+  },
+
+  #command {
     matches = "jane",
     description = "Speak to jane",
     action = fun(_Sender, _Body) ->
@@ -47,6 +63,7 @@ commands() -> [
       random:seed(erlang:now()),
       lists:nth(random:uniform(length(NotFoundResponses)), NotFoundResponses)
     end,
+
     subcommands = [
       #command {
         matches = "stop",
@@ -217,21 +234,6 @@ commands() -> [
             end
           }
         ]
-      },
-
-      #command {
-        matches = "(tweet|twitter)",
-        action = fun(_Sender, Body) ->
-          Url = lists:last(string:tokens(Body, " ")),
-          TweetID = lists:last(string:tokens(Url, "/")),
-          TweetUrl = string:concat("https://api.twitter.com/1/statuses/show.json?id=", TweetID),
-
-          Tweet = web_request:get_json(TweetUrl),
-          Text = binary_to_list(dict:fetch(<<"text">>, Tweet)),
-          User = binary_to_list(dict:fetch(<<"screen_name">>, dict:fetch(<<"user">>, Tweet))),
-
-          string:join(["\"", Text, "\" - @", User], "")
-        end
       },
 
       #command {

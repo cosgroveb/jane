@@ -44,7 +44,10 @@ eval_message([], _Sender, _Body) ->
 eval_message([Command|Commands], Sender, Body) ->
   #command{matches=Matches, action=Action, subcommands=SubCommands} = Command,
   PaddedBody = string:join([" ", Body, " "], ""),
-  PaddedMatches = string:join(["\s", Matches, "\s"], ""),
+  PaddedMatches = case Command#command.pad_match of
+    true -> string:join(["\s", Matches, "\s"], "");
+    false -> Matches
+  end,
 
   case re:run(PaddedBody, PaddedMatches) of
     nomatch ->
