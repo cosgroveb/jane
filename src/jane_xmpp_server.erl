@@ -56,7 +56,6 @@ handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
   end,
   {noreply, State};
 handle_info(_Request, State) ->
-  lists:foreach(fun(Room) -> join_room(Room) end, ?app_env(muc_rooms)),
   {noreply, State}.
 
 handle_call(_Request, _From, State) ->
@@ -103,8 +102,7 @@ connect(Login, Password, Domain) ->
 join_xmpp_room(Session, Login, Room) ->
   error_logger:info_msg("Joining xmpp room ~p as ~p~n", [Room, Login]),
   JoinStanza = build_join_stanza(Login, Room),
-  O = exmpp_session:send_packet(Session, JoinStanza),
-  io:fwrite("~p~n", [O]).
+  exmpp_session:send_packet(Session, JoinStanza).
 
 build_join_stanza(Login, Room) ->
   Presence = exmpp_presence:presence(available, ""),
