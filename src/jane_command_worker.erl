@@ -58,6 +58,7 @@ eval_message([Command|Commands], Sender, Body) ->
     nomatch ->
       eval_message(Commands, Sender, Body);
     _ ->
+      error_logger:info_msg("Command match: ~p~n", [Matches]),
       case eval_message(SubCommands, Sender, Body) of
         error -> call_action(Action, Sender, Body);
         Output -> Output
