@@ -5,7 +5,7 @@
 -include_lib("exmpp/include/exmpp_client.hrl").
 -include_lib("jane.hrl").
 
--export([start_link/0, send_message/1, silence/0, unsilence/0]).
+-export([start_link/0, send_message/1, silence/0, unsilence/0, join_room/1]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
@@ -35,6 +35,9 @@ silence() ->
 unsilence() ->
   gen_server:cast(jane_xmpp_server, unsilence).
 
+join_room(Room) ->
+  gen_server:cast(jane_xmpp_server, {join_room, Room}).
+
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -53,6 +56,7 @@ handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
   end,
   {noreply, State};
 handle_info(_Request, State) ->
+  lists:foreach(fun(Room) -> join_room(Room) end, ?app_env(muc_rooms)),
   {noreply, State}.
 
 handle_call(_Request, _From, State) ->
@@ -66,6 +70,9 @@ handle_cast(silence, State) ->
   {noreply, State#state{silenced=true}};
 handle_cast(unsilence, State) ->
   {noreply, State#state{silenced=false}};
+handle_cast({join_room, Room}, State) ->
+  join_xmpp_room(State#state.session, ?app_env(user_login), Room),
+  {noreply, State};
 handle_cast(_, State) ->
   {noreply, State}.
 
@@ -96,7 +103,8 @@ connect(Login, Password, Domain) ->
 join_xmpp_room(Session, Login, Room) ->
   error_logger:info_msg("Joining xmpp room ~p as ~p~n", [Room, Login]),
   JoinStanza = build_join_stanza(Login, Room),
-  exmpp_session:send_packet(Session, JoinStanza).
+  O = exmpp_session:send_packet(Session, JoinStanza),
+  io:fwrite("~p~n", [O]).
 
 build_join_stanza(Login, Room) ->
   Presence = exmpp_presence:presence(available, ""),
