@@ -110,13 +110,13 @@ build_join_stanza(Login, Room) ->
   exmpp_xml:set_attributes(Stanza,[{<<"to">>, Room}, {<<"from">>, Login}]).
 
 should_handle_message(Request, Message) ->
-  (is_old_message(Request) == false) and (is_from_self(Message#message.room, Request) == false) and has_botname(Message).
+  (is_old_message(Request) == false) and (is_from_self(Message#message.room, Request) == false).
 
 parse_xmpp_message(#received_packet{raw_packet=Packet, type_attr="groupchat"}) ->
   Body = exmpp_message:get_body(Packet),
   From = exmpp_xml:get_attribute(Packet, <<"from">>, "unknown"),
   Bot = ?app_env(user_login),
-  RoomUrl = lists:last(string:tokens(binary_to_list(From), "/")),
+  [RoomUrl|_]  = string:tokens(binary_to_list(From), "/"),
   [RoomUser|_] = string:tokens(Bot, "@"),
 
   #message{
@@ -141,8 +141,3 @@ is_old_message(RawMessage) ->
 is_from_self(Room, Request) ->
   exmpp_jid:parse(Room) == exmpp_jid:make(Request#received_packet.from).
 
-has_botname(#message{body=Body, to=To}) when is_binary(Body) ->
-  [BotName|_] = string:tokens(To, "@"),
-  string:rstr(string:to_lower(binary_to_list(Body)),string:to_lower(BotName)) > 0;
-has_botname(_) ->
-  false.
