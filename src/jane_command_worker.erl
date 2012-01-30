@@ -27,14 +27,14 @@ init(Message) ->
 %% Private
 %% ===================================================================
 
-handle_message({process_message, #message{room=Room, to=To, from=From, body=Body}}) ->
+handle_message({process_message, #message{room=Room, to=To, from=From, body=Body, source=Source}}) ->
   Sender = lists:nth(2,string:tokens(binary_to_list(From), "/")),
   case eval_message(command:commands(), Sender, binary_to_list(Body)) of
     error ->
       error_logger:info_msg("Command not found: ~p~n", [binary_to_list(Body)]);
     Output ->
-      error_logger:info_msg("Command output: ~p~n", [Output]),
-      jane_xmpp_server:send_message(#message{room=Room, to=From, from=To, body=Output})
+      error_logger:info_msg("Command output: ~p~nSource: ~p~n", [Output, Source]),
+      erlang:apply(Source, send_message, [#message{room=Room, to=From, from=To, body=Output}])
   end;
 handle_message(_) ->
   {ok, nothing}.

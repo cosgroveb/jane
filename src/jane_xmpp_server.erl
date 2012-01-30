@@ -123,7 +123,8 @@ parse_xmpp_message(#received_packet{raw_packet=Packet, type_attr="groupchat"}) -
     room = string:join([RoomUrl, RoomUser], "/"),
     to = Bot,
     from = From,
-    body = Body
+    body = Body,
+    source = jane_xmpp_server
   };
 parse_xmpp_message(_Request) ->
   {error}.
