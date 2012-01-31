@@ -26,9 +26,6 @@ help(Prefix, [#command{matches=Matches, description=Description, subcommands=Sub
 
   string:concat(Output, help(Prefix, Commands)).
 
-shell_exec(ShellCommand) ->
-  fun(_, _) -> os:cmd(ShellCommand) end.
-
 %%%===================================================================
 %%% Commands
 %%%===================================================================
@@ -168,27 +165,20 @@ commands() -> [
       #command {
         matches = "(whats on|what is on)",
         description = "Tells you what is on something",
-        subcommands = [
-          #command {
-            matches = "qa",
-            action = shell_exec("curl -s -k \"https://qa.braintreegateway.com/revision\" | awk '{ print $1 }'")
-          },
+        action = fun(_Sender, Body) ->
+          PaddedBody = string:join([" ", Body, " "], ""),
 
-          #command {
-            matches = "qa2",
-            action = shell_exec("curl -s -k \"https://qa2.braintreegateway.com/revision\" | awk '{ print $1 }'")
-          },
+          [{_Matches, Url}|_]= lists:filter(fun({Matches, _Url}) ->
+            PaddedMatches = string:join(["\s", Matches, "\s"], ""),
+            case re:run(PaddedBody, PaddedMatches) of
+              nomatch -> false;
+              _ -> true
+            end
+          end, ?app_env(whats_on_commands)),
 
-          #command {
-            matches = "(sandbox|sand)",
-            action = shell_exec("curl -s -k \"https://sandbox.braintreegateway.com/revision\" | awk '{ print $1 }'")
-          },
-
-          #command {
-            matches = "(production|prod)",
-            action = shell_exec("curl -s -k \"https://www.braintreegateway.com/revision\" | awk '{ print $1 }'")
-          }
-        ]
+          Cmd = string:join(["curl -s -k \"", Url, "\" | awk '{ print $1 }'"], ""),
+          os:cmd(Cmd)
+        end
       },
 
       #command {
