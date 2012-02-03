@@ -44,9 +44,8 @@ join_room(Room) ->
 %%%===================================================================
 
 init([]) ->
-  Session = connect(?app_env(user_login), ?app_env(user_password), ?app_env(server_domain)),
-  lists:foreach(fun(R) -> join_xmpp_room(Session, ?app_env(user_login), R) end, ?app_env(muc_rooms)),
-  {ok, #state{session = Session, silenced = false, rooms=[?app_env(muc_rooms)]}, 0}.
+  gen_server:cast(jane_xmpp_server, connect),
+  {ok, #state{silenced=false}, 0}.
 
 handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
   Message = parse_xmpp_message(Request),
@@ -55,12 +54,28 @@ handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
     false -> nomessage
   end,
   {noreply, State};
+handle_info(#received_packet{packet_type=presence, type_attr="unavailable"}, State) ->
+  handle_xmpp_failure(),
+  {noreply, State};
+handle_info(#received_packet{packet_type=presence, type_attr="error"}, State) ->
+  handle_xmpp_failure(),
+  {noreply, State};
 handle_info(_Request, State) ->
   {noreply, State}.
 
 handle_call(_Request, _From, State) ->
   {noreply, State}.
 
+handle_cast(connect, State) ->
+  try connect(?app_env(user_login), ?app_env(user_password), ?app_env(server_domain)) of
+    Session ->
+      lists:foreach(fun(R) -> join_xmpp_room(Session, ?app_env(user_login), R) end, ?app_env(muc_rooms)),
+      {noreply, #state{session = Session, silenced = false, rooms=[?app_env(muc_rooms)]}}
+  catch
+    _ ->
+      handle_xmpp_failure(),
+      {noreply, State}
+  end;
 handle_cast({send_message, Message}, State=#state{session=Session, silenced=false}) ->
   XmppMessage = prepare_message(Message),
   exmpp_session:send_packet(Session, XmppMessage),
@@ -85,6 +100,12 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Private
 %%%===================================================================
+
+handle_xmpp_failure() ->
+  io:fwrite("Waiting a bit for xmpp servers to come back up~n", []),
+  timer:sleep(5000),
+  application:stop(exmpp),
+  erlang:error(xmpp_fail).
 
 connect(Login, Password, Domain) ->
   error_logger:info_msg("Connecting to xmpp server ~p as ~p~n", [Domain, Login]),
