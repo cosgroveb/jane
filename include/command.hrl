@@ -1,1 +1,1 @@
--record(command, {matches, description="", action, subcommands=[]}).
+-record(command, {matches, description="", action, subcommands=[], pad_match=true}).

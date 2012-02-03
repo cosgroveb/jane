@@ -27,23 +27,15 @@ init(Message) ->
 %% Private
 %% ===================================================================
 
-handle_message({process_message, #message{room=Room, to=To, from=From, body=Body}}) ->
+handle_message({process_message, #message{room=Room, to=To, from=From, body=Body, source=Source}}) ->
   Sender = lists:nth(2,string:tokens(binary_to_list(From), "/")),
-  Reply = case eval_message(command:commands(), Sender, binary_to_list(Body)) of
+  case eval_message(command:commands(), Sender, binary_to_list(Body)) of
     error ->
-      error_logger:info_msg("Command not found: ~p~n", [binary_to_list(Body)]),
-      NotFoundResponses = [
-        "Sorry, I don't know what you mean",
-        "I have no idea what you're talking about",
-        "Hmm? Maybe ask for help"
-      ],
-      random:seed(erlang:now()),
-      lists:nth(random:uniform(length(NotFoundResponses)), NotFoundResponses);
+      error_logger:info_msg("Command not found: ~p~n", [binary_to_list(Body)]);
     Output ->
-      error_logger:info_msg("Command output: ~p~n", [Output]),
-      Output
-  end,
-  jane_xmpp_server:send_message(#message{room=Room, to=From, from=To, body=Reply});
+      error_logger:info_msg("Command output: ~p~nSource: ~p~n", [Output, Source]),
+      erlang:apply(Source, send_message, [#message{room=Room, to=From, from=To, body=Output}])
+  end;
 handle_message(_) ->
   {ok, nothing}.
 
@@ -52,13 +44,15 @@ eval_message([], _Sender, _Body) ->
 eval_message([Command|Commands], Sender, Body) ->
   #command{matches=Matches, action=Action, subcommands=SubCommands} = Command,
   PaddedBody = string:join([" ", Body, " "], ""),
-  PaddedMatches = string:join(["\s", Matches, "\s"], ""),
+  PaddedMatches = case Command#command.pad_match of
+    true -> string:join(["\s", Matches, "\s"], "");
+    false -> Matches
+  end,
 
   case re:run(PaddedBody, PaddedMatches) of
     nomatch ->
       eval_message(Commands, Sender, Body);
     _ ->
-      error_logger:info_msg("Command match: ~p~n", [Matches]),
       case eval_message(SubCommands, Sender, Body) of
         error -> call_action(Action, Sender, Body);
         Output -> Output

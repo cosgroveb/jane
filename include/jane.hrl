@@ -1,4 +1,4 @@
--record(message, {room, to, from, body, raw_message}).
+-record(message, {room, to, from, body, raw_message, source}).
 
 % Macros to get settings
 -define(app_env(Key), (

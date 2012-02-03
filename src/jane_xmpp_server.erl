@@ -44,9 +44,8 @@ join_room(Room) ->
 %%%===================================================================
 
 init([]) ->
-  Session = connect(?app_env(user_login), ?app_env(user_password), ?app_env(server_domain)),
-  lists:foreach(fun(R) -> join_xmpp_room(Session, ?app_env(user_login), R) end, ?app_env(muc_rooms)),
-  {ok, #state{session = Session, silenced = false, rooms=[?app_env(muc_rooms)]}, 0}.
+  gen_server:cast(jane_xmpp_server, connect),
+  {ok, #state{silenced=false}, 0}.
 
 handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
   Message = parse_xmpp_message(Request),
@@ -55,12 +54,28 @@ handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
     false -> nomessage
   end,
   {noreply, State};
+handle_info(#received_packet{packet_type=presence, type_attr="unavailable"}, State) ->
+  handle_xmpp_failure(),
+  {noreply, State};
+handle_info(#received_packet{packet_type=presence, type_attr="error"}, State) ->
+  handle_xmpp_failure(),
+  {noreply, State};
 handle_info(_Request, State) ->
   {noreply, State}.
 
 handle_call(_Request, _From, State) ->
   {noreply, State}.
 
+handle_cast(connect, State) ->
+  try connect(?app_env(user_login), ?app_env(user_password), ?app_env(server_domain)) of
+    Session ->
+      lists:foreach(fun(R) -> join_xmpp_room(Session, ?app_env(user_login), R) end, ?app_env(muc_rooms)),
+      {noreply, #state{session = Session, silenced = false, rooms=[?app_env(muc_rooms)]}}
+  catch
+    _ ->
+      handle_xmpp_failure(),
+      {noreply, State}
+  end;
 handle_cast({send_message, Message}, State=#state{session=Session, silenced=false}) ->
   XmppMessage = prepare_message(Message),
   exmpp_session:send_packet(Session, XmppMessage),
@@ -86,6 +101,17 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Private
 %%%===================================================================
 
+handle_xmpp_failure() ->
+  WaitTime = case application:get_env(xmpp_reconnect_time) of
+    undefined -> 10 * 1000;
+    Time -> Time * 1000
+  end,
+
+  io:fwrite("Waiting a bit for xmpp servers to come back up~n", []),
+  timer:sleep(WaitTime),
+  application:stop(exmpp),
+  erlang:error(xmpp_fail).
+
 connect(Login, Password, Domain) ->
   error_logger:info_msg("Connecting to xmpp server ~p as ~p~n", [Domain, Login]),
   application:start(exmpp),
@@ -110,20 +136,21 @@ build_join_stanza(Login, Room) ->
   exmpp_xml:set_attributes(Stanza,[{<<"to">>, Room}, {<<"from">>, Login}]).
 
 should_handle_message(Request, Message) ->
-  (is_old_message(Request) == false) and (is_from_self(Message#message.room, Request) == false) and has_botname(Message).
+  (is_old_message(Request) == false) and (is_from_self(Message#message.room, Request) == false).
 
 parse_xmpp_message(#received_packet{raw_packet=Packet, type_attr="groupchat"}) ->
   Body = exmpp_message:get_body(Packet),
   From = exmpp_xml:get_attribute(Packet, <<"from">>, "unknown"),
   Bot = ?app_env(user_login),
-  RoomUrl = lists:last(string:tokens(binary_to_list(From), "/")),
+  [RoomUrl|_]  = string:tokens(binary_to_list(From), "/"),
   [RoomUser|_] = string:tokens(Bot, "@"),
 
   #message{
     room = string:join([RoomUrl, RoomUser], "/"),
     to = Bot,
     from = From,
-    body = Body
+    body = Body,
+    source = jane_xmpp_server
   };
 parse_xmpp_message(_Request) ->
   {error}.
@@ -141,8 +168,3 @@ is_old_message(RawMessage) ->
 is_from_self(Room, Request) ->
   exmpp_jid:parse(Room) == exmpp_jid:make(Request#received_packet.from).
 
-has_botname(#message{body=Body, to=To}) when is_binary(Body) ->
-  [BotName|_] = string:tokens(To, "@"),
-  string:rstr(string:to_lower(binary_to_list(Body)),string:to_lower(BotName)) > 0;
-has_botname(_) ->
-  false.
