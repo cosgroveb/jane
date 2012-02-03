@@ -102,8 +102,13 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 
 handle_xmpp_failure() ->
+  WaitTime = case application:get_env(xmpp_reconnect_time) of
+    undefined -> 10 * 1000;
+    Time -> Time * 1000
+  end,
+
   io:fwrite("Waiting a bit for xmpp servers to come back up~n", []),
-  timer:sleep(5000),
+  timer:sleep(WaitTime),
   application:stop(exmpp),
   erlang:error(xmpp_fail).
 
