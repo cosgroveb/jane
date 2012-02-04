@@ -3,7 +3,7 @@
 -include_lib("jane.hrl").
 -include_lib("command.hrl").
 
--export([start_link/1, process_message/1, init/1]).
+-export([start_link/1, process_message/1, init/1, eval_message/3]).
 
 -define(SERVER, ?MODULE).
 

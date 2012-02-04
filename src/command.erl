@@ -69,6 +69,21 @@ commands() -> [
       },
 
       #command {
+        matches = "scores",
+        action = fun(_Sender, _Body) ->
+          Stats = web_request:get_json("http://braintree:pingpong@elovation.herokuapp.com/games/3.json"),
+          Ratings = dict:fetch(<<"ratings">>, Stats),
+          RatingStings = lists:map(fun(R) ->
+            Player = binary_to_list(dict:fetch(<<"player">>, R)),
+            Score = integer_to_list(dict:fetch(<<"value">>, R)),
+            string:join([Player, " (", Score, ")"], "")
+          end, Ratings),
+
+          string:join(RatingStings, ", ")
+        end
+      },
+
+      #command {
         matches = "start",
         description = "Starts jane",
         action = call_function(jane_xmpp_server, unsilence)
