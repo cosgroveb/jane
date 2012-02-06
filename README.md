@@ -2,13 +2,10 @@
 
 A simple chat bot written in erlang.
 
-***
-
 ##Prerequisites
 
-* **erlang**: if you don't have it, you should be able to simply `brew install
-  erlang`
-  * **exmpp**:  get it from https://github.com/processone/exmpp
+* **erlang**: if you don't have it, you should be able to simply `brew install erlang`
+* **exmpp**:  get it from https://github.com/processone/exmpp
 
 ##Building Jane
 
@@ -38,8 +35,6 @@ reloaded as you save .erl files during development.*
 
 
 Now you can chat with **jane** on your XMPP server!
-
-***
 
 ##Contributors
 
