@@ -29,7 +29,7 @@ send_message(Message) ->
   gen_server:cast(jane_irc_server, {send_message, Message}).
 
 silence() ->
-  send_message("Ok I won't talk until you tell me to start"),
+  % send_message("Ok I won't talk until you tell me to start"),
   gen_server:cast(jane_irc_server, silence).
 
 unsilence() ->
@@ -44,18 +44,34 @@ join_room(Room) ->
 %%%===================================================================
 
 init([]) ->
-  Session = connect(?app_env(irc_user_login), ?app_env(irc_port), ?app_env(irc_server_domain)),
-  lists:foreach(fun(R) -> join_irc_channel(Session, R) end, ?app_env(irc_channels)),
+  Session = connect(?app_env(irc_user_login), ?app_env(irc_server_port), ?app_env(irc_server_domain)),
+  io:format("~nSession ~p~n",[Session]),
+  % lists:foreach(fun(R) -> join_irc_channel(Session, R) end, ?app_env(irc_channels)),
   {ok, #state{session = Session, silenced = false, rooms=[?app_env(irc_channels)]}, 0}.
 
-handle_info({tcp, _Socket, _Data}, State) ->
+handle_info({tcp, Socket, Data}, State) ->
   %% Need to parse Data here and determine and respond to PING, PRIVMSG, 376 (end of MOTD)
-  Message = "",
-  jane_command_worker:process_message(Message),
+  Login = ?app_env(irc_user_login),
+  case string:tokens(Data, ": ") of
+    [User, "PRIVMSG", Channel, Login| _] ->
+      From = lists:nth(1, string:tokens(User, "!")),
+      Body = "hello jane",
+      Message = #message{room=Channel, to=?app_env(irc_user_login), from=list_to_binary(From), body=list_to_binary(Body), source=jane_irc_server},
+      error_logger:info_msg("Processing message: ~p~n", [Message]),
+      jane_command_worker:process_message(Message);
+    [_, "376"|_] ->
+      error_logger:info_msg("Joining rooms: ~p~n", [State#state.rooms]),
+      lists:foreach(fun(R) -> join_irc_channel(Socket, R) end, State#state.rooms);
+    ["PING"| T] ->
+      gen_tcp:send(Socket, "PONG " ++ T ++ "\r\n");
+    Other ->
+      io:format("~ngot here...~n~p",[Other]),
+      ok
+  end,
   {noreply, State};
 handle_info(quit, State) ->
-  error_logger:info_message("jane_irc_server received quit message, quitting...~n"),
-  gen_tcp:close(socket_goes_here),
+  error_logger:info_msg("jane_irc_server received quit message, quitting...~n"),
+  % gen_tcp:close(socket_goes_here),
   {noreply, State};
 handle_info(_Request, State) ->
   {noreply, State}.
@@ -63,8 +79,9 @@ handle_info(_Request, State) ->
 handle_call(_Request, _From, State) ->
   {noreply, State}.
 
-handle_cast({send_message, Message}, State=#state{session=_Session, silenced=false}) ->
-  _IrcMessage = prepare_message(Message),
+handle_cast({send_message, Message}, State=#state{session=Session, silenced=false}) ->
+  IrcMessage = prepare_message(Message),
+  gen_tcp:send(Session, IrcMessage),
   % send irc message %
   {noreply, State};
 handle_cast(silence, State) ->
@@ -90,16 +107,15 @@ code_change(_OldVsn, State, _Extra) ->
 
 connect(Login, Port, Domain) ->
   error_logger:info_msg("Connecting to irc server ~p as ~p~n", [Domain, Login]),
-  {ok, Sock} = gen_tcp:connect(Domain, Port, [{packet, line}]),
+  {ok, Sock} = gen_tcp:connect("brians-macbook-pro.local", 6665, [{packet, line}]),
+  io:format("~nGot here - Res: ~p~n",[Sock]),
   gen_tcp:send(Sock, "NICK " ++ Login ++ "\r\n"),
-  gen_tcp:send(Sock, "USER " ++ Login ++ "\r\n"),
-  %% join server
-  {ok, nothing}.
+  gen_tcp:send(Sock, "USER " ++ Login ++ " blah blah blah blah\r\n"),
+  Sock.
 
-join_irc_channel(_Session, Room) ->
-  error_logger:info_msg("Joining xmpp room ~p ~n", [Room]),
-  %% join room
+join_irc_channel(Session, Room) ->
+  error_logger:info_msg("Joining IRC channel ~p ~n", [Room]),
+  gen_tcp:send(Session, "JOIN :" ++ Room ++ "\r\n"),
   {ok, nothing}.
-
-prepare_message(#message{from=_From, to=_To, body=_Body}) ->
-  "".
+prepare_message(#message{room=Channel, from=_From, to=_To, body=Body}) ->
+  "PRIVMSG " ++ Channel ++ " :" ++ Body ++ "\r\n".
