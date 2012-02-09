@@ -19,4 +19,15 @@ is_ping(["PING"| _T]) ->
 is_ping(_IrcData) ->
   false.
 
+parse_irc_packet(Packet) ->
+  parse_split_input(string:tokens(Packet, ": ")).
 
+parse_split_input([FullFromString, "PRIVMSG", Channel, Login| _]) ->
+  From = lists:nth(1, string:tokens(FullFromString, "!")),
+  {irc_chat, From, Channel, Login};
+parse_split_input([_, "376"|_]) ->
+  {irc_end_of_motd, null, null, null};
+parse_split_input(["PING"| _T]) ->
+  {irc_ping, null, null, null};
+parse_split_input(_Other) ->
+  {error}.
