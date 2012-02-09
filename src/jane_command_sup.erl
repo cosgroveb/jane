@@ -28,6 +28,6 @@ init([]) ->
   Children = [{jane_command_worker,{jane_command_worker,start_link,[]},
                                     transient,brutal_kill,worker,
                                     [jane_command_worker]}],
-  RestartStrategy = {simple_one_for_one, 10, 120},
+  RestartStrategy = {simple_one_for_one, 2, 120},
   {ok, {RestartStrategy, Children}}.
 
