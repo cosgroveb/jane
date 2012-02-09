@@ -3,7 +3,7 @@
 -include_lib("jane.hrl").
 -include_lib("command.hrl").
 
--export([start_link/1, process_message/1, init/1]).
+-export([start_link/1, process_message/1, init/1, eval_message/2]).
 
 -define(SERVER, ?MODULE).
 
@@ -29,7 +29,7 @@ init(Message) ->
 
 handle_message({process_message, #message{room=Room, to=To, from=From, body=Body, source=Source}}) ->
   Sender = lists:nth(2,string:tokens(binary_to_list(From), "/")),
-  case eval_message(command:commands(), Sender, binary_to_list(Body)) of
+  case eval_message(Sender, binary_to_list(Body)) of
     error ->
       error_logger:info_msg("Command not found: ~p~n", [binary_to_list(Body)]);
     Output ->
@@ -38,6 +38,9 @@ handle_message({process_message, #message{room=Room, to=To, from=From, body=Body
   end;
 handle_message(_) ->
   {ok, nothing}.
+
+eval_message(Sender, Body) ->
+  eval_message(command:commands(), Sender, Body).
 
 eval_message([], _Sender, _Body) ->
   error;
