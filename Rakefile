@@ -29,3 +29,8 @@ task :test do
   rebar :eunit
 end
 
+
+desc "Run development console"
+task :console do
+  sh "erl -config test -pa ebin deps/*/ebin -s jane"
+end

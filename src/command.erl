@@ -16,7 +16,8 @@ help(Commands) ->
 help(_Prefix, []) ->
   "";
 help(Prefix, [#command{matches=Matches, description=Description, subcommands=SubCommands}|Commands]) ->
-  SubCommandOutput = help("    \\_ ", SubCommands),
+  ClearedPrefix = string:join([" " || X <- Prefix], ""),
+  SubCommandOutput = help(string:concat(ClearedPrefix, "    \\_ "), SubCommands),
   Output = if
     Prefix == "" ->
       string:join([Prefix, Matches, ": ", Description, "\n", SubCommandOutput, "\n"], "");

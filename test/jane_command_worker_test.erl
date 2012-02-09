@@ -10,12 +10,18 @@ help_test() ->
       subcommands = [
         #command {
           matches = "world",
-          description = "says hello world"
+          description = "says hello world",
+          subcommands = [
+            #command {
+              matches = "foo",
+              description = "bar"
+            }
+          ]
         }
       ]
     }
   ],
 
   Output = command:help(Commands),
-  ExpectedOutput = "hello: says hello\n    \\_ world: says hello world\n\n",
+  ExpectedOutput = "hello: says hello\n    \\_ world: says hello world\n           \\_ foo: bar\n\n",
   ?assertEqual(ExpectedOutput, Output).
