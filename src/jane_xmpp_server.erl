@@ -29,7 +29,6 @@ send_message(Message) ->
   gen_server:cast(jane_xmpp_server, {send_message, Message}).
 
 silence() ->
-  send_message("Ok I won't talk until you tell me to start"),
   gen_server:cast(jane_xmpp_server, silence).
 
 unsilence() ->
