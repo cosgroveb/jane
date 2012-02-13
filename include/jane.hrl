@@ -1,4 +1,5 @@
 -record(message, {room, to, from, body, raw_message, source}).
+-record(irc_packet, {type, from=null, channel=null, to=null, body=null}).
 
 % Macros to get settings
 -define(app_env(Key), (

@@ -25,5 +25,6 @@ start_link() ->
 
 init([]) ->
   XmppServer = ?CHILD(jane_xmpp_server, worker),
+  IrcServer  = ?CHILD(jane_irc_server, worker),
   CommandSupervisor = ?CHILD(jane_command_sup, supervisor),
-  {ok, { {one_for_one, 1000, 60 * 60 * 1000}, [XmppServer, CommandSupervisor]} }.
+  {ok, { {one_for_one, 1000, 60 * 60 * 1000}, [XmppServer, IrcServer, CommandSupervisor]} }.
