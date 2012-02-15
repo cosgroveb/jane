@@ -16,7 +16,7 @@ help(Commands) ->
 help(_Prefix, []) ->
   "";
 help(Prefix, [#command{matches=Matches, description=Description, subcommands=SubCommands}|Commands]) ->
-  ClearedPrefix = string:join([" " || X <- Prefix], ""),
+  ClearedPrefix = string:join([" " || _ <- Prefix], ""),
   SubCommandOutput = help(string:concat(ClearedPrefix, "    \\_ "), SubCommands),
   Output = if
     Prefix == "" ->
@@ -73,6 +73,25 @@ commands() -> [
         matches = "start",
         description = "Starts jane",
         action = call_function(jane_xmpp_server, unsilence)
+      },
+
+      #command {
+        matches = "scores",
+        action = fun(_Sender, _Body) ->
+          User = ?app_env(elovation_user),
+          Pass = ?app_env(elovation_password),
+          Url = string:join(["http://", User, ":", Pass, "@", ?app_env(elovation_url)], ""),
+
+          Stats = web_request:get_json(Url),
+          Ratings = dict:fetch(<<"ratings">>, Stats),
+          RatingStings = lists:map(fun(R) ->
+            Player = binary_to_list(dict:fetch(<<"player">>, R)),
+            Score = integer_to_list(dict:fetch(<<"value">>, R)),
+            string:join([Player, " (", Score, ")"], "")
+          end, Ratings),
+
+          string:join(RatingStings, ", ")
+        end
       },
 
       #command {
