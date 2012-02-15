@@ -66,9 +66,9 @@ handle_call(_Request, _From, State) ->
   {noreply, State}.
 
 handle_cast(connect, State) ->
-  try connect(?app_env(user_login), ?app_env(user_password), ?app_env(server_domain)) of
+  try connect(?app_env(xmpp_user_login), ?app_env(xmpp_user_password), ?app_env(xmpp_server_domain)) of
     Session ->
-      lists:foreach(fun(R) -> join_xmpp_room(Session, ?app_env(user_login), R) end, ?app_env(muc_rooms)),
+      lists:foreach(fun(R) -> join_xmpp_room(Session, ?app_env(xmpp_user_login), R) end, ?app_env(muc_rooms)),
       {noreply, #state{session = Session, silenced = false, rooms=[?app_env(muc_rooms)]}}
   catch
     _ ->
@@ -84,7 +84,7 @@ handle_cast(silence, State) ->
 handle_cast(unsilence, State) ->
   {noreply, State#state{silenced=false}};
 handle_cast({join_room, Room}, State) ->
-  join_xmpp_room(State#state.session, ?app_env(user_login), Room),
+  join_xmpp_room(State#state.session, ?app_env(xmpp_user_login), Room),
   {noreply, State};
 handle_cast(_, State) ->
   {noreply, State}.
@@ -118,8 +118,8 @@ connect(Login, Password, Domain) ->
   [UserName, UserDomain] = string:tokens(Login,"@"),
   JID     = exmpp_jid:make(UserName, UserDomain, random),
   exmpp_session:auth_info(Session, JID, Password),
-  error_logger:info_msg("Connecting on port ~p~n", [list_to_integer(?app_env(server_port))]),
-  exmpp_session:connect_TCP(Session, Domain, list_to_integer(?app_env(server_port))),
+  error_logger:info_msg("Connecting on port ~p~n", [list_to_integer(?app_env(xmpp_server_port))]),
+  exmpp_session:connect_TCP(Session, Domain, list_to_integer(?app_env(xmpp_server_port))),
   error_logger:info_msg("Logging in~n"),
   exmpp_session:login(Session, "PLAIN"),
   Session.
@@ -140,7 +140,7 @@ should_handle_message(Request, Message) ->
 parse_xmpp_message(#received_packet{raw_packet=Packet, type_attr="groupchat"}) ->
   Body = exmpp_message:get_body(Packet),
   From = exmpp_xml:get_attribute(Packet, <<"from">>, "unknown"),
-  Bot = ?app_env(user_login),
+  Bot = ?app_env(xmpp_user_login),
   [RoomUrl|_]  = string:tokens(binary_to_list(From), "/"),
   [RoomUser|_] = string:tokens(Bot, "@"),
 

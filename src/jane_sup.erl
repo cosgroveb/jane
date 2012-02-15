@@ -24,7 +24,19 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-  XmppServer = ?CHILD(jane_xmpp_server, worker),
-  IrcServer  = ?CHILD(jane_irc_server, worker),
   CommandSupervisor = ?CHILD(jane_command_sup, supervisor),
-  {ok, { {one_for_one, 1000, 60 * 60 * 1000}, [XmppServer, IrcServer, CommandSupervisor]} }.
+  XmppServers = get_chat_servers(xmpp),
+  IrcServers = get_chat_servers(irc),
+
+  Children = [CommandSupervisor] ++ IrcServers ++ XmppServers,
+  {ok, { {one_for_one, 1000, 60 * 60 * 1000}, Children} }.
+
+get_chat_servers(TypeAtom) ->
+  Type = atom_to_list(TypeAtom),
+  Server = list_to_atom(string:join(["jane", Type, "server"], "_")),
+  User = list_to_atom(string:join([Type, "user", "login"], "_")),
+
+  case application:get_env(jane, User) of
+    undefined -> [];
+    _ -> [?CHILD(Server, worker)]
+  end.
