@@ -1,7 +1,7 @@
 {application, jane,
   [
   {description, "jane: just another erlang bot"},
-  {vsn, "0.2.0"},
+  {vsn, "0.2.1"},
   {modules, [
     command,
     jane,
