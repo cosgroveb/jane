@@ -242,6 +242,57 @@ commands() -> [
               web_request:get("http://jukebox2.local/player/pause"),
               "I paused jukebox"
             end
+          },
+
+          #command {
+            matches = "(search|find)",
+            action = fun(_Sender, Body) ->
+              WrapChar = case string:str(Body, "'") of
+                0 -> "\"";
+                _ -> "'"
+              end,
+              SearchString = lists:last(string:tokens(Body, WrapChar)),
+              SearchRequest = string:join(string:tokens(SearchString, " "), "+"),
+
+              Url = string:concat("http://jukebox2.local/library/search?q=", SearchRequest),
+              Output = web_request:get_json(Url),
+              Top5 = lists:map(fun(S) ->
+                Title = binary_to_list(dict:fetch(<<"title">>, S)),
+                Album = binary_to_list(dict:fetch(<<"album">>, S)),
+                Artist = binary_to_list(dict:fetch(<<"artist">>, S)),
+                string:join([Title, "  Album:", Album, "  Artist:", Artist], " ")
+              end, lists:sublist(Output, 5)),
+
+              case length(Top5) of
+                0 -> "Jukebox didn't find anything";
+                _ -> string:join(["Here are the top results:"|Top5], "\n")
+              end
+            end
+          },
+
+          #command {
+            matches = "add",
+            action = fun(_Sender, Body) ->
+              WrapChar = case string:str(Body, "'") of
+                0 -> "\"";
+                _ -> "'"
+              end,
+              SearchString = lists:last(string:tokens(Body, WrapChar)),
+              SearchRequest = string:join(string:tokens(SearchString, " "), "+"),
+
+              Url = string:concat("http://jukebox2.local/library/search?q=", SearchRequest),
+              Output = web_request:get_json(Url),
+              Top5 = lists:map(fun(S) ->
+                Title = binary_to_list(dict:fetch(<<"title">>, S)),
+                Path= binary_to_list(dict:fetch(<<"path">>, S)),
+                string:join([Title, " http://jukebox2.local/playlist/add/", Path], "")
+              end, lists:sublist(Output, 5)),
+
+              case length(Top5) of
+                0 -> "Click the link of the song you want to add:";
+                _ -> string:join(["Here are the top results:"|Top5], "\n")
+              end
+            end
           }
         ]
       },
@@ -259,56 +310,6 @@ commands() -> [
         end
       },
 
-      #command {
-        matches = "(search|find)",
-        action = fun(_Sender, Body) ->
-          WrapChar = case string:str(Body, "'") of
-            0 -> "\"";
-            _ -> "'"
-          end,
-          SearchString = lists:last(string:tokens(Body, WrapChar)),
-          SearchRequest = string:join(string:tokens(SearchString, " "), "+"),
-
-          Url = string:concat("http://jukebox2.local/library/search?q=", SearchRequest),
-          Output = web_request:get_json(Url),
-          Top5 = lists:map(fun(S) ->
-            Title = binary_to_list(dict:fetch(<<"title">>, S)),
-            Album = binary_to_list(dict:fetch(<<"album">>, S)),
-            Artist = binary_to_list(dict:fetch(<<"artist">>, S)),
-            string:join([Title, "  Album:", Album, "  Artist:", Artist], " ")
-          end, lists:sublist(Output, 5)),
-
-          case length(Top5) of
-            0 -> "Jukebox didn't find anything";
-            _ -> string:join(["Here are the top results:"|Top5], "\n")
-          end
-        end
-      },
-
-      #command {
-        matches = "add",
-        action = fun(_Sender, Body) ->
-          WrapChar = case string:str(Body, "'") of
-            0 -> "\"";
-            _ -> "'"
-          end,
-          SearchString = lists:last(string:tokens(Body, WrapChar)),
-          SearchRequest = string:join(string:tokens(SearchString, " "), "+"),
-
-          Url = string:concat("http://jukebox2.local/library/search?q=", SearchRequest),
-          Output = web_request:get_json(Url),
-          Top5 = lists:map(fun(S) ->
-            Title = binary_to_list(dict:fetch(<<"title">>, S)),
-            Path= binary_to_list(dict:fetch(<<"path">>, S)),
-            string:join([Title, " http://jukebox2.local/playlist/add/", Path], "")
-          end, lists:sublist(Output, 5)),
-
-          case length(Top5) of
-            0 -> "Click the link of the song you want to add:";
-            _ -> string:join(["Here are the top results:"|Top5], "\n")
-          end
-        end
-      }
     ]
   }
 
