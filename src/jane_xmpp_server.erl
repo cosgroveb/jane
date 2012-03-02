@@ -53,8 +53,12 @@ handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
     false -> nomessage
   end,
   {noreply, State};
-handle_info(#received_packet{packet_type=presence, type_attr="unavailable"}, State) ->
-  handle_xmpp_failure(),
+handle_info(#received_packet{from={_Room, _Host, User}, packet_type=presence, type_attr="unavailable"}, State) ->
+  [BotName|_] = string:tokens(?app_env(xmpp_user_login), "@"),
+  case BotName == User of
+    true -> handle_xmpp_failure();
+    false -> pass
+  end,
   {noreply, State};
 handle_info(#received_packet{packet_type=presence, type_attr="error"}, State) ->
   handle_xmpp_failure(),

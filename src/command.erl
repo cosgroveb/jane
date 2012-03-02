@@ -308,7 +308,7 @@ commands() -> [
           DegreedConditions = re:replace(WeatherConditions, "&deg;", "°", [global, {return,list}]),
           re:replace(DegreedConditions, "</?.*?/?>", "", [global, {return,list}])
         end
-      },
+      }
 
     ]
   }
