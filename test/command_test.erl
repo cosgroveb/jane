@@ -32,6 +32,34 @@ eval_match_test() ->
   ?assertEqual("foo", jane_command_worker:eval_message(Commands, "Tester", "hello")),
   ?assertEqual("foo", jane_command_worker:eval_message(Commands, "Tester", "hi")).
 
+
+eval_match_special_test() ->
+  Commands = [
+
+    #command {
+      matches = "doesntmatch",
+      action  = fun(_, _) ->
+        "bad"
+      end
+    },
+
+    #command {
+      matches = "(hello|hi)",
+      action  = fun(_, _) ->
+        "foo"
+      end
+    }
+
+  ],
+
+  ?assertEqual("foo", jane_command_worker:eval_message(Commands, "Tester", "hello?")),
+  ?assertEqual("foo", jane_command_worker:eval_message(Commands, "Tester", "hello??")),
+  ?assertEqual("foo", jane_command_worker:eval_message(Commands, "Tester", "hello!")),
+  ?assertEqual("foo", jane_command_worker:eval_message(Commands, "Tester", "hello,")),
+  ?assertEqual("foo", jane_command_worker:eval_message(Commands, "Tester", "hello.")),
+  ?assertEqual("foo", jane_command_worker:eval_message(Commands, "Tester", "hello;")),
+  ?assertEqual("foo", jane_command_worker:eval_message(Commands, "Tester", "hi!")).
+
 eval_match_subcommand_test() ->
   Commands = [
 

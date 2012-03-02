@@ -2,6 +2,8 @@
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("jane.hrl").
 
+-ifdef(TESTIRC).
+
 parse_irc_chat_packet_test() ->
   ChatPacket = ":cosgroveb!~cosgroveb@127.0.y.p PRIVMSG #test :jane hello\r\n",
   ExpectedPacket = #irc_packet{
@@ -49,6 +51,8 @@ prepare_packet_test() ->
   ?assert(Result).
 
 prepare_join_packet_test() ->
+  error_logger:tty(false),
+
   Room = "#test",
   ExpectedPacket = "JOIN :#test\r\n",
 
@@ -65,6 +69,8 @@ prepare_ping_packet_test() ->
   ?assert(ExpectedPacket == PingPacket).
 
 connect_bad_port_test() ->
+  error_logger:tty(false),
+
   Login     = "jane_on_a_bad_port",
   BadPort   = "6578",
   Domain    = "127.0.0.1",
@@ -92,3 +98,4 @@ irc_conn_faker_loop(Socket) ->
       irc_conn_faker_loop(Socket);
     _Other -> ok
   end.
+-endif.
