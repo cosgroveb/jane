@@ -2,7 +2,7 @@
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("jane.hrl").
 
--ifdef(TESTIRC).
+-ifdef(IRCTEST).
 
 parse_irc_chat_packet_test() ->
   ChatPacket = ":cosgroveb!~cosgroveb@127.0.y.p PRIVMSG #test :jane hello\r\n",
