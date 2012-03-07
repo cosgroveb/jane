@@ -54,7 +54,7 @@ handle_info(Request, State) when ?IS_GROUP_MESSAGE(Request) ->
   end,
   {noreply, State};
 handle_info(#received_packet{packet_type=presence, type_attr="unavailable"}, State) ->
-  true -> handle_xmpp_failure(),
+  handle_xmpp_failure(),
   {noreply, State};
 handle_info(#received_packet{packet_type=presence, type_attr="error"}, State) ->
   handle_xmpp_failure(),
