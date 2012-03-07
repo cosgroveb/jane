@@ -9,3 +9,4 @@ ebin
 *.plt
 test.config
 *.dump
+tags
