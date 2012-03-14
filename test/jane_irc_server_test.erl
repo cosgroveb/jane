@@ -2,8 +2,6 @@
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("jane.hrl").
 
--ifdef(IRCTEST).
-
 parse_irc_chat_packet_test() ->
   ChatPacket = ":cosgroveb!~cosgroveb@127.0.y.p PRIVMSG #test :jane hello\r\n",
   ExpectedPacket = #irc_packet{
@@ -98,4 +96,3 @@ irc_conn_faker_loop(Socket) ->
       irc_conn_faker_loop(Socket);
     _Other -> ok
   end.
--endif.

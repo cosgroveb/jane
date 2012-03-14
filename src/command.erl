@@ -298,7 +298,15 @@ commands() -> [
       },
 
       #command {
-        matches = "is it raining in chicago",
+        matches = "git",
+        action = fun(_Sender, Body) ->
+          Sha = lists:last(string:tokens(Body, " ")),
+          string:join(["https://git.braintreeps.com/?p=gateway.git;a=commitdiff;h=", Sha], "")
+        end
+      },
+
+      #command {
+        matches = "(is it raining in chicago|weather)",
         action = fun(_Sender, Body) ->
           City = lists:last(string:tokens(Body, " ")),
           ApiUrl = string:concat("http://isitraining.in/", City),

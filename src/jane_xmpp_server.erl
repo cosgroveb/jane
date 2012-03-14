@@ -84,7 +84,11 @@ handle_cast(silence, State) ->
 handle_cast(unsilence, State) ->
   {noreply, State#state{silenced=false}};
 handle_cast({join_room, Room}, State) ->
-  join_xmpp_room(State#state.session, ?app_env(xmpp_user_login), Room),
+  try join_xmpp_room(State#state.session, ?app_env(xmpp_user_login), Room)
+  catch
+    _ ->
+      handle_xmpp_failure()
+  end,
   {noreply, State};
 handle_cast(_, State) ->
   {noreply, State}.
