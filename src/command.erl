@@ -299,10 +299,22 @@ commands() -> [
 
       #command {
         matches = "git",
-        action = fun(_Sender, Body) ->
-          Sha = lists:last(string:tokens(Body, " ")),
-          string:join(["https://git.braintreeps.com/?p=gateway.git;a=commitdiff;h=", Sha], "")
-        end
+        subcommands = [
+          #command {
+            matches = "show",
+            description = "<repo name/url> <commit>",
+            action = fun(_Sender, Body) ->
+              [Sha, RepoName|_] = lists:reverse(string:tokens(Body, " ")),
+
+              case git_service:get_repo(RepoName) of
+                error ->
+                  "I don't know about that git repo";
+                RepoUrl ->
+                  git_service:show(Sha, RepoUrl)
+              end
+            end
+          }
+        ]
       },
 
       #command {
