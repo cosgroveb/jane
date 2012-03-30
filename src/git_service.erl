@@ -15,6 +15,10 @@ show(Sha, RepoUrl) ->
 
 % Private
 
+list_repos() ->
+  DefaultRepos = ?app_env(git_repos),
+  string:join(lists:map(fun({Name, _Url}) -> Name end, DefaultRepos), ", ").
+
 get_repo(RepoName) ->
   DefaultRepos = dict:from_list(?app_env(git_repos)),
   case dict:is_key(RepoName, DefaultRepos) of

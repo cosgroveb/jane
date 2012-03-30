@@ -301,6 +301,28 @@ commands() -> [
         matches = "git",
         subcommands = [
           #command {
+            matches = "list",
+            description = "list available repos",
+            action = fun(_Sender, _Body) ->
+              git_service:list_repos()
+            end
+          },
+
+          #command {
+            matches = "(last|latest)",
+            description = "Shows the last commit",
+            action = fun(_Sender, Body) ->
+              RepoName = lists:last(string:tokens(Body, " ")),
+              case git_service:get_repo(RepoName) of
+                error ->
+                  "I don't know about that git repo or object";
+                RepoUrl ->
+                  git_service:show("", RepoUrl)
+              end
+            end
+          },
+
+          #command {
             matches = "show",
             description = "<repo name/url> <commit>",
             action = fun(_Sender, Body) ->
