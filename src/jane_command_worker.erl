@@ -21,7 +21,8 @@ process_message(Message) ->
 
 init(Message) ->
   proc_lib:init_ack({ok, self()}),
-  handle_message(Message).
+  handle_message(Message),
+  exit(normal).
 
 %% ===================================================================
 %% Private
