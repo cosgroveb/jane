@@ -350,6 +350,60 @@ commands() -> [
           DegreedConditions = re:replace(WeatherConditions, "&deg;", "°", [global, {return,list}]),
           re:replace(DegreedConditions, "</?.*?/?>", "", [global, {return,list}])
         end
+      },
+
+      #command {
+        matches = "environments",
+        description = "List environments",
+        action = fun(_Sender, _Body) ->
+            environmentalist_service:index()
+        end
+      },
+
+      #command {
+        matches = "reserve",
+        description = "Reserve an environment",
+        action = fun(Reservee, Body) ->
+            EnvironmentName = lists:last(string:tokens(Body, " ")),
+            case environmentalist_service:reserve(Reservee, EnvironmentName) of
+              reserved ->
+                string:join(["Ok, I've reserved", EnvironmentName,
+                    "for you,", Reservee], " ");
+              not_reserved ->
+                string:join(["I'm sorry, I wasn't able to reserve", EnvironmentName,
+                    ". Are you sure it exists? Check here:", ?app_env(environmentalist_url)], " ")
+            end
+        end
+      },
+
+      #command {
+        matches = "release",
+        description = "Release an environment",
+        action = fun(_Sender, Body) ->
+            EnvironmentName = lists:last(string:tokens(Body, " ")),
+            case environmentalist_service:release(EnvironmentName) of
+              released ->
+                string:join(["Ok,", EnvironmentName, "has been released"], " ");
+              not_released ->
+                string:join(["I'm sorry, I wasn't able to release", EnvironmentName,
+                    ". Are you sure it exists? Check here:", ?app_env(environmentalist_url)], " ")
+            end
+        end
+      },
+
+      #command {
+        matches = "who's on",
+        description = "Show an environment",
+        action = fun(_Sender, Body) ->
+            EnvironmentName = lists:last(string:tokens(Body, " ")),
+            case environmentalist_service:show(EnvironmentName) of
+              {ok, EnvironmentStatus} ->
+                EnvironmentStatus;
+              not_found ->
+                string:join(["I'm sorry, I wasn't able to find ", EnvironmentName,
+                ". Are you sure it exists? Check here:", ?app_env(environmentalist_url)], " ")
+            end
+        end
       }
 
     ]

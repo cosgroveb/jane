@@ -1,6 +1,6 @@
 -module(web_request).
 -include_lib("jane.hrl").
--export([get/1, get/2, get_json/1, get_json/2, tuple_to_dict/1, json_to_dict/1]).
+-export([get/1, get/2, get_json/1, get_json/2, post_json/2, tuple_to_dict/1, json_to_dict/1]).
 
 %%%===================================================================
 %%% API
@@ -18,6 +18,10 @@ get_json(Url) ->
 
 get_json(Url, Options) ->
   {ok, _StatusCode, _Headers, Body} = ibrowse:send_req(Url, [{"Accept", "application/json"}], get, [], Options),
+  json_to_dict(Body).
+
+post_json(Url, FormData) ->
+  {ok, _StatusCode, _Headers, Body} = ibrowse:send_req(Url,[{"Content-Type", "application/x-www-form-urlencoded"}], post, FormData),
   json_to_dict(Body).
 
 %% ===================================================================
